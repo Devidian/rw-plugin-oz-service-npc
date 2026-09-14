@@ -1,0 +1,13 @@
+{
+  "outfits": [
+    {"key": "medieval-tailor", "clothing": ["medievalshirt", "medievalpants", "medievalshoes"]},
+    {"key": "medieval-traveler", "clothing": ["medievalshirt2", "mountiepants", "medievalfurboots"]},
+    {"key": "medieval-ranger", "clothing": ["medievalshirt3", "workpants", "oldboot"]},
+    {"key": "rustic-worker", "clothing": ["ragshirt", "cargopants", "trekkingshoes"]},
+    {"key": "modern-polo", "clothing": ["poloshirt", "cargopants", "trekkingshoes"]},
+    {"key": "hat-felt", "clothing": ["medievalshirt", "mountiepants", "mountieboots", "felthat"]},
+    {"key": "hat-pilgrim", "clothing": ["medievalshirt2", "medievalpants", "medievalshoes", "pilgrimhat"]},
+    {"key": "hat-cowboy", "clothing": ["poloshirt", "cargopants", "oldboot", "cowboyhat"]},
+    {"key": "hat-cap", "clothing": ["ragshirt", "workpants", "trekkingshoes", "cappy"]}
+  ]
+}

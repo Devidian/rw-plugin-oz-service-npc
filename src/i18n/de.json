@@ -1,0 +1,88 @@
+{
+  "tc": {
+    "cmd": {
+      "help": "Hilfe:\nVerfügbare Chat-Kommandos:\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD status\u003c/color\u003e zeigt plugin infos an\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD open\u003c/color\u003e öffnet das Pluginmenü\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD help\u003c/color\u003e zeigt diese Hilfe an\n\n\u003ccolor\u003dyellow\u003eTipp:\u003c/color\u003e Binde den Befehl \u003ccolor\u003dred\u003e/PH_PLUGIN_CMD open\u003c/color\u003e an eine Taste der Maus oder Tastatur.",
+      "status": "🔎 Plugin Status\n➡️ Plugin version: PH_VERSION\n➡️ Installierte Sprachen: PH_LANG_AVAILABLE\n➡️ Deine Sprache: PH_LANGUAGE\n➡️ Verwendete Sprache: PH_USEDLANG"
+    },
+    "data": {
+      "desc": "Hier kannst du gespeicherte Spielerdaten für PH_PLUGIN_NAME ansehen.",
+      "empty": "Für dieses Plugin sind noch keine gespeicherten Spielerdaten verfügbar.",
+      "title": "Gespeicherte Daten für PH_PLUGIN_NAME"
+    },
+    "err": {
+      "cmd": {
+        "unknown": "Unbekanntes Kommando tippe \u003ccolor\u003dred\u003e/PH_PLUGIN_CMD help\u003c/color\u003e für Hilfe."
+      }
+    },
+    "msg": {
+      "plugin": {
+        "welcome": "ℹ️ \u003ccolor\u003d#F00000\u003ePH_PLUGIN_NAME\u003c/color\u003e | \u003ccolor\u003d#F0F000\u003evPH_PLUGIN_VERSION\u003c/color\u003e | \u003ccolor\u003d#C0C0C0\u003e/PH_PLUGIN_CMD\u003c/color\u003e | geladen!"
+      }
+    },
+    "settings": {
+      "desc": "Hier kannst du spielerbezogene Einstellungen für PH_PLUGIN_NAME anpassen.",
+      "empty": "Für PH_PLUGIN_NAME sind noch keine Spieler-Einstellungen verfügbar.",
+      "title": "Plugin Einstellungen für PH_PLUGIN_NAME"
+    },
+    "setting": {
+      "enablewelcomemessage": {
+        "desc": "Wenn aktiv, sendet dieses Plugin eine Willkommensnachricht, wenn ein Spieler beitritt.",
+        "label": "Willkommensnachricht"
+      },
+      "examplesecret": {
+        "desc": "Template-Beispiel für einen sensiblen Wert. In echten Plugins ersetzen oder entfernen.",
+        "label": "Beispiel-Secret"
+      },
+      "examples": {
+        "desc": "Template-Beispiele ersetzen oder entfernen.",
+        "label": "Beispiele"
+      },
+      "logging": {
+        "desc": "Logging-Ausgabe und Detailgrad.",
+        "label": "Protokollierung"
+      },
+      "loglevel": {
+        "desc": "Steuert die Logging-Ausgabe des Plugins.",
+        "label": "Log-Level"
+      },
+      "playermessages": {
+        "desc": "Nachrichten, die dieses Plugin direkt an Spieler sendet.",
+        "label": "Spielernachrichten"
+      },
+      "reloadonchange": {
+        "desc": "Wenn aktiv, lädt dieses Plugin Einstellungen neu, wenn settings.properties geändert wird.",
+        "label": "Bei Änderung neu laden"
+      },
+      "runtime": {
+        "desc": "Reload- und Wartungsverhalten zur Laufzeit.",
+        "label": "Laufzeit"
+      },
+      "restorer": {"label":"Restaurator","desc":"Reparaturkosten und Dauer."},
+      "restorerhoursatonedurability": {"label":"Stunden bei 1 Haltbarkeit","desc":"Volle Reparaturdauer, wenn ein Gegenstand noch 1 Haltbarkeit besitzt."},
+      "restorermaterialcostpercent": {"label":"Materialkosten in Prozent","desc":"Materialanteil bezogen auf die fehlende Haltbarkeit."},
+      "restorerservicefee": {"label":"Servicegebühr","desc":"Pauschale Wallet-Gebühr je Reparatur."},
+      "notifications": {"label":"Benachrichtigungen","desc":"Optionale Service-Benachrichtigungskanäle."},
+      "restorerdiscordchannelid": {"label":"Restaurator-Discord-Kanal","desc":"Optionale Kanal-ID für Restaurator-Benachrichtigungen."},
+      "augmenterdiscordchannelid": {"label":"Handwerker-Discord-Kanal","desc":"Optionale Kanal-ID für Handwerker-Benachrichtigungen."}
+    },
+    "service": {
+      "admin": {"required":"Administratorrechte erforderlich.","notfound":"Service-NPC nicht gefunden.","invalid":"Ungültige Service-NPC-Aktion.","moved":"Position des Service-NPC aktualisiert.","renamed":"Service-NPC umbenannt.","jobs":{"open":"Der NPC hat noch offene Aufträge und kann nicht aufgelöst werden."},"settlement":{"failed":"Das NPC-Konto konnte nicht abgerechnet werden; es wurden keine Daten entfernt."},"dissolved":"Service-NPC PH_NAME aufgelöst."},
+      "create": {"failed":"Service-NPC konnte nicht erstellt werden.","success":"Service-NPC PH_NAME erstellt."},
+      "wallet": {"unavailable":"OZ Wallet-Systemkonten werden für Service-NPC benötigt."},
+      "command": {"help":"Service NPC: /osn create <restorer|augmenter> <male|female>; /osn move <npc-id>; /osn rename <npc-id> <name>; /osn dissolve <npc-id>; /osn debug modifiers <item-id>; /osn debug modifier <item-id> <modifier>"},
+      "debug": {"item":{"unknown":"Unbekannter Gegenstand: PH_ITEM."},"modifier":{"unknown":"Unbekannter Modifier: PH_MODIFIER."},"granted":"PH_COUNT Modifier-Vergleichsgegenstand/-gegenstände für PH_ITEM erstellt."},
+      "menu": {"root":"Service-NPC","restorer":"Restaurator","augmenter":"Meisterhandwerker","male":"Männlicher NPC","female":"Weiblicher NPC","admin":{"only":"NPC-Erstellung ist nur für Administratoren verfügbar."}},
+      "ui": {"title":"Service-NPC","subtitle":"Wähle einen Service.","legend":"Aufträge verwenden Wallet und werden über OZ Mail zugestellt.","identity":{"restorer":"Restaurator","augmenter":"Meisterhandwerker"},"tab":{"service":"Service","settings":"Einstellungen","jobs":"Auftragslog"},"service":{"restorer":"Wähle einen beschädigten Gegenstand aus deinem Inventar. Reparaturpreise enthalten Materialanteil und Servicegebühr. Die Dauer richtet sich nach der fehlenden Haltbarkeit; fertige Gegenstände werden per Mail geliefert.","augmenter":"Wähle einen Gegenstand, der Modifikatoren unterstützt. Es kann nur die nächste aktivierte Verbesserungsstufe beauftragt werden; Material, Zeit und Gebühr werden vor der Bestätigung angezeigt."},"settings":{"help":"Admin-Einstellungen: Diesen Endpunkt umbenennen, verschieben, Kleidung ändern oder auflösen. Bei offenen Aufträgen bleibt die Auflösung gesperrt.","rename":"Umbenennen","move":"Hierher verschieben","outfit":"Kleidung ändern","dissolve":"Auflösen"},"jobs":{"empty":"Noch keine offenen oder abgeschlossenen Aufträge vorhanden."},"previous":"Zurück","next":"Weiter"},
+      "job": {"no":{"damaged":"Du hast keinen beschädigten, reparierbaren Gegenstand.","augmentable":"Du hast keinen Gegenstand, der weiter verbessert werden kann."},"confirm":"PH_ITEM für PH_COST zur Reparatur geben? Geschätzter Abschluss: PH_MINUTES Minuten. Der Gegenstand wird sicher verwahrt und nach Abschluss per Mail zugestellt.","cancel":"Abbrechen","accept":"Auftrag erteilen","finish":"Jetzt abschließen","mail":{"unavailable":"Dein OZ-Mail-Postfach benötigt vor der Auftragserteilung einen freien Platz."},"payment":{"failed":"Die Servicegebühr konnte nicht bezahlt werden."},"materials":{"missing":"Dir fehlen benötigte Verbesserungsmaterialien."},"item":{"changed":"Der ausgewählte Gegenstand ist nicht mehr verfügbar; deine Zahlung wurde erstattet."},"refund":{"pending":"Der Gegenstand hat sich nach der Zahlung verändert. Die Erstattung benötigt eine Administrator-Prüfung."},"accepted":"Auftrag für PH_COST angenommen. Geschätzter Abschluss: PH_MINUTES Minuten.","remaining":"noch PH_MINUTES Minuten","completed":"Abgeschlossen","status":{"preparing":"Vorbereitung","open":"In Arbeit","completed":"Abgeschlossen","refund_pending":"Erstattung ausstehend"},"failed":"Der Auftrag konnte nicht sicher gespeichert werden."},
+      "mail":{"restorer":{"subject":"Restaurator-Auftrag abgeschlossen","body":"Dein PH_ITEM wurde repariert: Haltbarkeit PH_BEFORE/PH_MAX → PH_AFTER/PH_MAX."},"augmenter":{"subject":"Verbesserungsauftrag abgeschlossen","body":"Dein PH_ITEM wurde verbessert: PH_BEFORE → PH_AFTER."}}
+    },
+    "template": {
+      "info": {
+        "panel": {
+          "info": "\u003cb\u003ePH_PLUGIN_NAME\u003c/b\u003e\nVersion: PH_PLUGIN_VERSION\nBefehl: /PH_PLUGIN_CMD\nDieses Template zeigt die gemeinsame Tools-Integration für UI, Einstellungen, i18n, Logger und Info/Status zukünftiger Plugins.",
+          "status": "\u003cb\u003eAktuelle Template-Einstellungen\u003c/b\u003e\nWillkommensnachricht: PH_WELCOME_MESSAGE"
+        }
+      }
+    }
+  }
+}

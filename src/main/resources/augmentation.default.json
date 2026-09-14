@@ -1,0 +1,9 @@
+{
+  "tiers": [
+    {"level": 0, "enabled": false, "minutes": 0, "serviceFee": 0, "materials": {}, "modifiers": ["Broken", "Shoddy", "Blunt", "Shameful", "Cringy", "Cheesy", "Miserable", "Terrible", "Crude", "Weak"]},
+    {"level": 1, "enabled": true, "minutes": 30, "serviceFee": 10, "materials": {"aluminiumplate": 2}, "modifiers": ["Normal", "Boring", "Questionable", "Acceptable", "Unspectacular", "Ordinary", "Nice"]},
+    {"level": 2, "enabled": true, "minutes": 90, "serviceFee": 25, "materials": {"ironplate": 4, "aluminiumplate": 2}, "modifiers": ["Improved", "Sharp", "Robust", "Strong", "Amazing", "Impressive", "Superior", "Appealing", "Powerful"]},
+    {"level": 3, "enabled": true, "minutes": 240, "serviceFee": 60, "materials": {"ironplate": 6, "tungstenplate": 2}, "modifiers": ["Merciless", "Ruthless", "Flawless", "Unique"]},
+    {"level": 4, "enabled": true, "minutes": 480, "serviceFee": 120, "materials": {"tungstenplate": 4, "goldplate": 2, "gem": 1}, "modifiers": ["Epic", "Legendary", "Godly"]}
+  ]
+}

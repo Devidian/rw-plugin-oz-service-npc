@@ -1,0 +1,88 @@
+{
+  "tc": {
+    "cmd": {
+      "help": "Help:\nAvailable chat commands:\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD status\u003c/color\u003e shows plugin infos\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD open\u003c/color\u003e opens the plugin menu\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD help\u003c/color\u003e shows this help\n\n\u003ccolor\u003dyellow\u003eTip:\u003c/color\u003e Bind the command \u003ccolor\u003dred\u003e/PH_PLUGIN_CMD open\u003c/color\u003e to a mouse button or keyboard key.",
+      "status": "🔎 Plugin Status\n➡️ Plugin version: PH_VERSION\n➡️ Installed languages: PH_LANG_AVAILABLE\n➡️ Your language: PH_LANGUAGE\n➡️ Used language: PH_USEDLANG\n➡️ Translated by: Devidian"
+    },
+    "data": {
+      "desc": "Here you can view stored player data for PH_PLUGIN_NAME.",
+      "empty": "No stored player data is available for this plugin yet.",
+      "title": "Saved Data for PH_PLUGIN_NAME"
+    },
+    "err": {
+      "cmd": {
+        "unknown": "Unknown command. Type \u003ccolor\u003dred\u003e/PH_PLUGIN_CMD help\u003c/color\u003e for help."
+      }
+    },
+    "msg": {
+      "plugin": {
+        "welcome": "ℹ️ \u003ccolor\u003d#F00000\u003ePH_PLUGIN_NAME\u003c/color\u003e | \u003ccolor\u003d#F0F000\u003evPH_PLUGIN_VERSION\u003c/color\u003e | \u003ccolor\u003d#C0C0C0\u003e/PH_PLUGIN_CMD\u003c/color\u003e | loaded!"
+      }
+    },
+    "settings": {
+      "desc": "Here you can adjust the player-facing settings for PH_PLUGIN_NAME.",
+      "empty": "No player settings are available for PH_PLUGIN_NAME yet.",
+      "title": "Plugin Settings for PH_PLUGIN_NAME"
+    },
+    "setting": {
+      "enablewelcomemessage": {
+        "desc": "If true, this plugin sends a welcome message when a player joins.",
+        "label": "Welcome message"
+      },
+      "examplesecret": {
+        "desc": "Template example for a sensitive value. Replace or remove in real plugins.",
+        "label": "Example secret"
+      },
+      "examples": {
+        "desc": "Replace or remove template-only examples.",
+        "label": "Examples"
+      },
+      "logging": {
+        "desc": "Logging output and verbosity.",
+        "label": "Logging"
+      },
+      "loglevel": {
+        "desc": "Controls plugin logging verbosity.",
+        "label": "Log level"
+      },
+      "playermessages": {
+        "desc": "Messages sent directly to players by this plugin.",
+        "label": "Player messages"
+      },
+      "reloadonchange": {
+        "desc": "If true, this plugin reloads settings when settings.properties changes.",
+        "label": "Reload on change"
+      },
+      "runtime": {
+        "desc": "Runtime reload and maintenance behavior.",
+        "label": "Runtime"
+      },
+      "restorer": {"label":"Restorer","desc":"Repair cost and duration."},
+      "restorerhoursatonedurability": {"label":"Hours at 1 durability","desc":"Full repair duration when an item has 1 durability remaining."},
+      "restorermaterialcostpercent": {"label":"Material cost percent","desc":"Material contribution as a percentage of missing durability."},
+      "restorerservicefee": {"label":"Service fee","desc":"Flat Wallet fee per repair."},
+      "notifications": {"label":"Notifications","desc":"Optional service notification channels."},
+      "restorerdiscordchannelid": {"label":"Restorer Discord channel","desc":"Optional channel ID for restorer notifications."},
+      "augmenterdiscordchannelid": {"label":"Augmenter Discord channel","desc":"Optional channel ID for augmenter notifications."}
+    },
+    "service": {
+      "admin": {"required":"Administrator permission required.","notfound":"Service NPC not found.","invalid":"Invalid service NPC action.","moved":"Service NPC position updated.","renamed":"Service NPC renamed.","jobs":{"open":"The NPC has unfinished orders and cannot be dissolved."},"settlement":{"failed":"The NPC account could not be settled; no data was removed."},"dissolved":"Service NPC PH_NAME dissolved."},
+      "create": {"failed":"Service NPC could not be created.","success":"Service NPC PH_NAME created."},
+      "wallet": {"unavailable":"OZ Wallet system accounts are required for Service NPC."},
+      "command": {"help":"Service NPC: /osn create <restorer|augmenter> <male|female>; /osn move <npc-id>; /osn rename <npc-id> <name>; /osn dissolve <npc-id>; /osn debug modifiers <item-id>; /osn debug modifier <item-id> <modifier>"},
+      "debug": {"item":{"unknown":"Unknown item: PH_ITEM."},"modifier":{"unknown":"Unknown modifier: PH_MODIFIER."},"granted":"Created PH_COUNT modifier comparison item(s) for PH_ITEM."},
+      "menu": {"root":"Service NPC","restorer":"Restorer","augmenter":"Master Craftsman","male":"Male NPC","female":"Female NPC","admin":{"only":"NPC creation is available to administrators only."}},
+      "ui": {"title":"Service NPC","subtitle":"Choose a service.","legend":"Orders use Wallet and are delivered through OZ Mail.","identity":{"restorer":"Restorer","augmenter":"Master Craftsman"},"tab":{"service":"Service","settings":"Settings","jobs":"Order Log"},"service":{"restorer":"Choose a damaged item from your inventory. Repair prices include a material contribution and service fee. Completion time is based on missing durability; completed items are delivered by mail.","augmenter":"Choose an item that supports modifiers. Only the next enabled augmentation tier can be ordered; required materials, time and fee are shown before confirmation."},"settings":{"help":"Admin settings: rename, move, change the outfit or dissolve this endpoint. Dissolve remains blocked while orders are open.","rename":"Rename","move":"Move here","outfit":"Change outfit","dissolve":"Dissolve"},"jobs":{"empty":"No completed or open orders are available yet."},"previous":"Previous","next":"Next"},
+      "job": {"no":{"damaged":"You do not have a damaged repairable item.","augmentable":"You do not have an item that can be improved further."},"confirm":"Submit PH_ITEM for repair for PH_COST? Estimated completion: PH_MINUTES minutes. The item will be held securely and delivered by mail when complete.","cancel":"Cancel","accept":"Submit order","finish":"Complete now","mail":{"unavailable":"Your OZ Mail mailbox needs a free slot before an order can be accepted."},"payment":{"failed":"The service fee could not be paid."},"materials":{"missing":"You do not have all required augmentation materials."},"item":{"changed":"The selected item is no longer available; your payment was refunded."},"refund":{"pending":"The selected item changed after payment. The refund requires administrator reconciliation."},"accepted":"Order accepted for PH_COST. Estimated completion: PH_MINUTES minutes.","remaining":"PH_MINUTES minutes remaining","completed":"Completed","status":{"preparing":"Preparing","open":"In progress","completed":"Completed","refund_pending":"Refund pending"},"failed":"The order could not be stored safely."},
+      "mail":{"restorer":{"subject":"Restorer service complete","body":"Your PH_ITEM was repaired: durability PH_BEFORE/PH_MAX → PH_AFTER/PH_MAX."},"augmenter":{"subject":"Augmenter service complete","body":"Your PH_ITEM was improved: PH_BEFORE → PH_AFTER."}}
+    },
+    "template": {
+      "info": {
+        "panel": {
+          "info": "\u003cb\u003ePH_PLUGIN_NAME\u003c/b\u003e\nVersion: PH_PLUGIN_VERSION\nCommand: /PH_PLUGIN_CMD\nThis template demonstrates shared Tools UI, settings, i18n, logger, and info/status integration for future plugins.",
+          "status": "\u003cb\u003eCurrent template settings\u003c/b\u003e\nWelcome message: PH_WELCOME_MESSAGE"
+        }
+      }
+    }
+  }
+}

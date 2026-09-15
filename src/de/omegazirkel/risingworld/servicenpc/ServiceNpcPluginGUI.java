@@ -7,6 +7,7 @@ import de.omegazirkel.risingworld.ServiceNpcPlugin;
 import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.ui.AssetManager;
 import de.omegazirkel.risingworld.tools.ui.MenuItem;
+import de.omegazirkel.risingworld.tools.ui.PluginInfoStatusProviders;
 import de.omegazirkel.risingworld.tools.ui.PluginMenuManager;
 import net.risingworld.api.objects.Player;
 
@@ -31,16 +32,16 @@ public final class ServiceNpcPluginGUI {
 
     public void openMainMenu(Player player) {
         List<MenuItem> items = new ArrayList<>();
+        items.add(new MenuItem(pluginName, "info-status", text("tc.service.menu.info.status"), selected -> {
+            selected.hideRadialMenu(true);
+            PluginInfoStatusProviders.show(selected, pluginName);
+        }));
         if (player.isAdmin()) {
             items.add(new MenuItem(pluginName, "service-restorer", text("tc.service.menu.restorer"),
                     selected -> openGenderMenu(selected, ServiceType.RESTORER)));
             items.add(new MenuItem(pluginName, "service-augmenter", text("tc.service.menu.augmenter"),
                     selected -> openGenderMenu(selected, ServiceType.AUGMENTER)));
-        } else {
-            items.add(new MenuItem(pluginName, "oz-service-npc", text("tc.service.menu.admin.only"),
-                    selected -> selected.sendTextMessage(text("tc.service.admin.required", selected))));
         }
-        items.add(MenuItem.closeMenu(player));
         PluginMenuManager.showMenu(player, items);
     }
 
@@ -51,7 +52,6 @@ public final class ServiceNpcPluginGUI {
         items.add(new MenuItem(pluginName, "service-npc-female", text("tc.service.menu.female"),
                 selected -> create(selected, type, false)));
         items.add(MenuItem.backMenu(player, this::openMainMenu));
-        items.add(MenuItem.closeMenu(player));
         PluginMenuManager.showMenu(player, items);
     }
 

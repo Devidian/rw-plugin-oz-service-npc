@@ -79,14 +79,14 @@ jobs:
             -Dfile=libs/PluginAPI.jar \
             -DgroupId=net.risingworld \
             -DartifactId=PluginAPI \
-            -Dversion=0.9.3 \
+            -Dversion=0.9.3.2 \
             -Dpackaging=jar
 
       - name: Checkout OZ Tools dependency
         uses: actions/checkout@v6
         with:
           repository: Devidian/rw-plugin-oz-tools
-          ref: v0.24.0
+          ref: v0.24.6
           path: .ci/rw-plugin-oz-tools
 
       - name: Install OZ Tools locally
@@ -173,14 +173,14 @@ jobs:
             -Dfile=libs/PluginAPI.jar \
             -DgroupId=net.risingworld \
             -DartifactId=PluginAPI \
-            -Dversion=0.9.3 \
+            -Dversion=0.9.3.2 \
             -Dpackaging=jar
 
       - name: Checkout OZ Tools dependency
         uses: actions/checkout@v6
         with:
           repository: Devidian/rw-plugin-oz-tools
-          ref: v0.24.0
+          ref: v0.24.6
           path: .ci/rw-plugin-oz-tools
 
       - name: Install OZ Tools locally

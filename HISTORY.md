@@ -2,6 +2,15 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.1.0] - 2026-09-23 | First public release
+
+- feat: publish the persistent Restorer and Augmenter NPC endpoints with
+  world-local name, outfit and augmentation catalogues.
+- feat: add the shared Info / Status panel to the Service NPC radial menu while
+  keeping creation actions administrator-only.
+- build: align the PluginAPI and OZ Tools baselines and distribute JSON-only
+  settings and translations while preserving legacy-runtime migration backups.
+
 ## [0.0.3] - 2026-09-05 | PluginAPI compatibility
 
 - build: update the bundled PluginAPI and Tools baseline for newly created plugins.

@@ -66,13 +66,8 @@ public class PluginSettings {
 	public void initSettings(String filePath) {
 		settingsFile = Path.of(filePath);
 		Path defaultSettingsFile = settingsFile.resolveSibling("settings.default.json");
-		Path legacySettingsFile = settingsFile.resolveSibling("settings.properties");
-
 		try {
-			if (JsonSettingsFile.migrateLegacyProperties(legacySettingsFile, settingsFile))
-				logger().info("Migrated legacy settings.properties to " + settingsFile.getFileName());
-			if (Files.notExists(settingsFile) && Files.exists(defaultSettingsFile))
-				JsonSettingsFile.writeFlatAtomically(settingsFile, JsonSettingsFile.loadFlat(defaultSettingsFile));
+			JsonSettingsFile.prepareWorldSettings(settingsFile);
 			java.util.Map<String, String> settings = JsonSettingsFile.loadFlat(settingsFile);
 			java.util.Map<String, String> defaults = JsonSettingsFile.loadFlat(defaultSettingsFile);
 

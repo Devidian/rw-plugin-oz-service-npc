@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.2.0] - 2026-09-23 | JSON-only settings runtime
+
+- change: use world-scoped JSON settings only; transfer legacy Properties values manually.
+
 ## [0.1.0] - 2026-09-23 | First public release
 
 - feat: publish the persistent Restorer and Augmenter NPC endpoints with

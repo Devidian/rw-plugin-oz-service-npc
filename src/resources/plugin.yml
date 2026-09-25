@@ -1,6 +1,6 @@
 name: "OZ - Service NPC"
 main: de.omegazirkel.risingworld.ServiceNpcPlugin
-version: 0.2.0
+version: 0.2.1
 author: "Maik 'Devidian' Laschober"
 team: "Omega Zirkel"
 description: "Persistent Restorer and Augmenter service NPCs"

@@ -11,6 +11,9 @@ import de.omegazirkel.risingworld.tools.ui.table.TableCell;
 import de.omegazirkel.risingworld.tools.ui.table.TableRow;
 import de.omegazirkel.risingworld.tools.ui.table.TableScrollView;
 import java.util.Arrays;
+import java.util.Locale;
+import net.risingworld.api.Server;
+import net.risingworld.api.definitions.Items.Modifier;
 import net.risingworld.api.objects.Player;
 import net.risingworld.api.ui.UILabel;
 import net.risingworld.api.ui.UITextField;
@@ -89,7 +92,7 @@ public final class ServiceNpcOverlay extends BasePluginOverlayWithTabs {
         for(ServiceInventoryTransfer.Candidate item:values){OZUIElement card=new OZUIElement();card.setPivot(Pivot.UpperLeft);card.style.width.set(31,Unit.Percent);card.style.height.set(92,Unit.Pixel);card.style.marginLeft.set(5);card.style.marginRight.set(5);card.style.marginTop.set(5);card.style.marginBottom.set(5);card.setBackgroundColor(.10f,.09f,.08f,.92f);card.setHoverBackgroundColor(0x2A2419DD);card.setBorder(1);card.setBorderColor(.95f,.75f,.25f,.42f);
             UILabel name=new UILabel(item.displayName());name.setPivot(Pivot.UpperLeft);name.setPosition(10,8,false);name.setSize(43,28,true);name.setFontSize(14);name.setTextWrap(true);card.addChild(name);card.addChild(cardIcon(itemIcon(item),54,42,72));
             String detail; AdvancedButton choose;
-            if(augmenter){ServiceJobService.AugmentQuote quote=jobs.augmentQuote(item);if(quote==null)continue;detail=item.modifier()+" → "+quote.targetModifier()+"\n"+quote.tier().serviceFee()+" "+jobs.currency()+" · "+quote.tier().minutes()+" min";choose=AdvancedButtonFactory.defaultButton(t().get("tc.service.job.accept",uiPlayer),ignored->confirmAugmenter(quote));}
+            if(augmenter){ServiceJobService.AugmentQuote quote=jobs.augmentQuote(item);if(quote==null)continue;detail=localizedModifier(item.modifier())+" → "+localizedModifier(quote.targetModifier())+"\n"+quote.tier().serviceFee()+" "+jobs.currency()+" · "+quote.tier().minutes()+" min";choose=AdvancedButtonFactory.defaultButton(t().get("tc.service.job.accept",uiPlayer),ignored->confirmAugmenter(quote));}
             else {ServiceJobService.RestorerQuote quote=jobs.quote(item);detail=item.durability()+"/"+item.maxDurability()+" · "+quote.cost()+" "+jobs.currency()+" · "+ServiceJobService.durationMinutes(quote.completedAt())+" min";choose=AdvancedButtonFactory.defaultButton(t().get("tc.service.job.accept",uiPlayer),ignored->confirmRestorer(quote));}
             UILabel info=new UILabel(detail);info.setPivot(Pivot.UpperLeft);info.setPosition(10,40,false);info.setSize(43,42,true);info.setFontSize(12);info.setTextWrap(true);card.addChild(info);choose.setPivot(Pivot.UpperRight);choose.setPosition(98,65,true);choose.setSize(126,24,false);card.addChild(choose);wrapper.addChild(card);}
         scroll.addChild(wrapper);
@@ -102,7 +105,7 @@ public final class ServiceNpcOverlay extends BasePluginOverlayWithTabs {
     }
     private void confirmAugmenter(ServiceJobService.AugmentQuote quote) {
         OZUIElement dialog=new OZUIElement();dialog.setPivot(Pivot.MiddleCenter);dialog.setPosition(50,50,true);dialog.setSize(460,205,false);dialog.setBackgroundColor(0,0,0,.94f);dialog.setBorder(1);dialog.setBorderColor(.85f,.65f,.2f,.8f);addChild(dialog);
-        String value=t().get("tc.service.job.confirm",uiPlayer).replace("PH_ITEM",quote.item().displayName()+" ("+quote.item().modifier()+" → "+quote.targetModifier()+")").replace("PH_COST",quote.tier().serviceFee()+" "+jobs.currency()).replace("PH_MINUTES",Long.toString(quote.tier().minutes()))+"\n"+materials(quote.tier().materials());
+        String value=t().get("tc.service.job.confirm",uiPlayer).replace("PH_ITEM",quote.item().displayName()+" ("+localizedModifier(quote.item().modifier())+" → "+localizedModifier(quote.targetModifier())+")").replace("PH_COST",quote.tier().serviceFee()+" "+jobs.currency()).replace("PH_MINUTES",Long.toString(quote.tier().minutes()))+"\n"+materials(quote.tier().materials());
         UILabel text=new UILabel(value);text.setPivot(Pivot.UpperLeft);text.setPosition(20,22,false);text.setSize(420,112,false);text.setFontSize(15);text.setTextWrap(true);dialog.addChild(text);
         AdvancedButton cancel=AdvancedButtonFactory.cancel(t().get("tc.service.job.cancel",uiPlayer),ignored->removeChild(dialog));cancel.setPivot(Pivot.UpperLeft);cancel.setPosition(20,155,false);cancel.setSize(150,32,false);dialog.addChild(cancel);
         AdvancedButton accept=AdvancedButtonFactory.ok(t().get("tc.service.job.accept",uiPlayer),ignored->{removeChild(dialog);if(jobs.submitAugmenter(uiPlayer,endpoint,quote))rebuild();});accept.setPivot(Pivot.UpperRight);accept.setPosition(440,155,false);accept.setSize(150,32,false);dialog.addChild(accept);
@@ -122,5 +125,11 @@ public final class ServiceNpcOverlay extends BasePluginOverlayWithTabs {
     }
     private static TableCell cell(String value,float width){UILabel label=new UILabel(value);label.setFont(Font.Default);label.setFontSize(12);label.setTextAlign(TextAnchor.MiddleLeft);return new TableCell(label,width);}
     private String localizedItemName(ServiceJob job){var definition=net.risingworld.api.definitions.Definitions.getItemDefinition(job.itemName());if(definition==null)return job.itemName();String value=definition.getLocalizedName(uiPlayer.getLanguage());return value==null||value.isBlank()?job.itemName():value;}
+    private String localizedModifier(String name) {
+        if (name == null || name.isBlank()) return "";
+        if (Modifier.Normal.name().equals(name)) return name;
+        String localized = Server.getLocalizedString(uiPlayer.getLanguage(), "item.modifier." + name.toLowerCase(Locale.ROOT));
+        return localized == null || localized.isBlank() ? name : localized;
+    }
     private void select(ServiceTab value) { tab = value; rebuild(); }
 }

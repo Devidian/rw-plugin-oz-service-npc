@@ -8,7 +8,7 @@
 
     <groupId>com.github.devidian</groupId>
     <artifactId>rw-plugin-oz-service-npc</artifactId>
-    <version>0.2.0</version>
+    <version>0.2.1</version>
 
     <name>OZServiceNPC</name>
     <description>Persistent Restorer and Augmenter service NPCs</description>
@@ -40,7 +40,7 @@
         <dependency>
             <groupId>com.github.devidian</groupId>
             <artifactId>rw-plugin-oz-tools</artifactId>
-            <version>0.26.0</version>
+            <version>0.26.3</version>
         </dependency>
 
         <!-- Rising World PluginAPI -->

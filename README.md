@@ -2,6 +2,8 @@
 
 Persistent Restorer and Augmenter NPC endpoints for Rising World. The plugin is a standalone adaptation of `rw-plugin-maven-template` and depends at runtime on OZ Tools, OZ Wallet and OZ Mail.
 
+The Augmenter displays modifier names in the player's game language.
+
 ## Administration
 
 `/osn create restorer male`, `/osn create restorer female`, `/osn create augmenter male`, and `/osn create augmenter female` create endpoints at the administrator position. `/osn move <npc-id>`, `/osn rename <npc-id> <name>`, and `/osn dissolve <npc-id>` manage them. Dissolve refuses open jobs and settles positive Wallet balances to the world account before account archival.

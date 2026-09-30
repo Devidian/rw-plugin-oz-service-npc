@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+## [0.3.0] - 2026-09-30 | Player shortcut visibility
+
+- change: add a per-player Service NPC shortcut visibility setting.
+
 ## [0.2.1] - 2026-09-25 | Localized item modifiers
 
 - fix: display game-localized item modifier names in Augmenter cards and confirmation.

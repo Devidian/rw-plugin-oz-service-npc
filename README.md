@@ -1,5 +1,7 @@
 # OZ Service NPC
 
+Players can hide the Service NPC shortcut in the plugin settings. It remains visible by default.
+
 Persistent Restorer and Augmenter NPC endpoints for Rising World. The plugin is a standalone adaptation of `rw-plugin-maven-template` and depends at runtime on OZ Tools, OZ Wallet and OZ Mail.
 
 The Augmenter displays modifier names in the player's game language.

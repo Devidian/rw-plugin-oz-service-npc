@@ -8,7 +8,7 @@ It must remain usable as a standalone template repository. Workspace-root orches
 ## Ownership
 Owns:
 - baseline Maven project layout
-- Java 20 plugin runtime defaults
+- Java 25 plugin runtime defaults
 - GitHub tag-release workflow conventions
 - baseline documentation, policy, and agent workflow structure
 - baseline examples for shared Tools UI, settings metadata, logging, and plugin
@@ -20,7 +20,7 @@ Does not own:
 - workspace-root orchestration rules
 
 ## Mandatory Workflow Rules
-- Preserve the Java 20 baseline.
+- Preserve the Java 25 baseline.
 - Preserve Maven-based build and packaging behavior.
 - Preserve GitHub tag-release compatibility.
 - Keep generated plugin repositories autonomous.

@@ -1,5 +1,7 @@
 # OZ Service NPC
 
+**Build baseline:** JDK 25 (`--release 25`) and the bundled Rising World PluginAPI 0.9.3.2 JAR.
+
 Players can hide the Service NPC shortcut in the plugin settings. It remains visible by default.
 
 Persistent Restorer and Augmenter NPC endpoints for Rising World. The plugin is a standalone adaptation of `rw-plugin-maven-template` and depends at runtime on OZ Tools, OZ Wallet and OZ Mail.

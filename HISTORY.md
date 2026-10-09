@@ -4,6 +4,11 @@
 
 ## Unreleased
 
+## [0.3.1] - 2026-10-08 | Localized material confirmation
+
+- fix: localize Augmenter material names in the confirmation dialog using the player's game language.
+- build: compile with Java 25 and refresh the bundled Rising World PluginAPI 0.9.3.2 JAR.
+
 ## [0.3.0] - 2026-09-30 | Player shortcut visibility
 
 - change: add a per-player Service NPC shortcut visibility setting.

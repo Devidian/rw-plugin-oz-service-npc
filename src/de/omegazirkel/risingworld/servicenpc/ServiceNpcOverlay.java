@@ -77,7 +77,11 @@ public final class ServiceNpcOverlay extends BasePluginOverlayWithTabs {
         java.util.List<ServiceInventoryTransfer.Candidate> values = jobs.augmentCandidates(uiPlayer);
         setupServiceCards(values, true);
     }
-    private static String materials(java.util.Map<String,Integer> materials) { return materials.entrySet().stream().map(e->e.getValue()+" "+e.getKey()).collect(java.util.stream.Collectors.joining(", ")); }
+    private String materials(java.util.Map<String,Integer> materials) { return materials.entrySet().stream().map(e->{
+        var definition=net.risingworld.api.definitions.Definitions.getItemDefinition(e.getKey());
+        String name=definition==null?e.getKey():definition.getLocalizedName(uiPlayer.getLanguage());
+        return e.getValue()+" "+(name==null||name.isBlank()?e.getKey():name);
+    }).collect(java.util.stream.Collectors.joining(", ")); }
     private TextureAsset itemIcon(ServiceInventoryTransfer.Candidate item) { var definition=net.risingworld.api.definitions.Definitions.getItemDefinition(item.itemName()); return definition == null ? AssetManager.getIcon(uiPlayer,"placeholder") : definition.getIcon(item.variant()); }
     private static OZUIElement cardIcon(TextureAsset asset, float x, float y, int size) { OZUIElement icon=new OZUIElement();icon.setPivot(Pivot.MiddleCenter);icon.setPosition(x,y,true);icon.setSize(size,size,false);icon.setBackgroundColor(0,0,0,0);if(asset!=null){icon.style.backgroundImage.set(asset);icon.style.backgroundImageScaleMode.set(ScaleMode.ScaleToFit);}return icon; }
     private void setupRestorer() {

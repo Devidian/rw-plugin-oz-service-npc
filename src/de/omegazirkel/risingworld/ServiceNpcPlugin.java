@@ -22,4 +22,6 @@ public final class ServiceNpcPlugin extends Plugin implements Listener, FileChan
     @Override public void onSettingsChanged(Path path) { if (runtime != null) runtime.reloadSettings(path); }
     @EventMethod public void onPlayerCommand(PlayerCommandEvent event) { runtime.events().command(event); }
     @EventMethod public void onNpcInteraction(PlayerNpcInteractionEvent event) { runtime.events().interact(event); }
+    /** Public read-only bridge used by faction dissolution. */
+    public int getFactionServiceNpcCount(int factionId) { return runtime == null ? Integer.MAX_VALUE : runtime.countForFaction(factionId); }
 }

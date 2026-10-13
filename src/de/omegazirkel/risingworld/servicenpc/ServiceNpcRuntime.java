@@ -23,4 +23,5 @@ public final class ServiceNpcRuntime {
     public void disable(){if(jobs!=null)jobs.stop();PluginShortcutVisibility.unregister(plugin.getDescription("name"));PluginInfoStatusProviders.unregisterProvider(plugin.getDescription("name"));try{if(db!=null)db.close();}catch(SQLException ex){ServiceNpcPlugin.logger().error("Cannot close database: "+ex.getMessage());}}
     public void reloadSettings(Path ignored){ settings.initSettings(); names.load(plugin); outfits.load(plugin); augmentation.load(plugin); }
     public ServiceNpcEventHandler events(){return events;}
+    public int countForFaction(int factionId){return manager==null ? Integer.MAX_VALUE : manager.countForFaction(factionId);}
 }

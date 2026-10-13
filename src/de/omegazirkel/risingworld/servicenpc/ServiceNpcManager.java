@@ -8,6 +8,7 @@ import java.util.UUID;
 import de.omegazirkel.risingworld.ServiceNpcPlugin;
 import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.bridge.WalletBridge;
+import de.omegazirkel.risingworld.tools.bridge.FactionBridge;
 import net.risingworld.api.World;
 import net.risingworld.api.definitions.Clothing.ClothingDefinition;
 import net.risingworld.api.definitions.Definitions;
@@ -27,11 +28,13 @@ public final class ServiceNpcManager {
     private final OutfitCatalog outfits;
     private final I18n i18n;
     private final ServiceJobService jobs;
+    private final FactionBridge factions;
     private final Random random = new Random();
 
     public ServiceNpcManager(ServiceNpcPlugin plugin, ServiceNpcRepository repository, NameCatalog names, OutfitCatalog outfits, I18n i18n,
             ServiceJobService jobs) {
         this.plugin = plugin; this.repository = repository; this.names = names; this.outfits = outfits; this.i18n = i18n; this.jobs = jobs;
+        this.factions = new FactionBridge(plugin);
     }
     public void rehydrate() {
         try { for (ServiceNpc endpoint : repository.all()) {
@@ -41,47 +44,77 @@ public final class ServiceNpcManager {
                 if (definition == null) { ServiceNpcPlugin.logger().warn("Service NPC dummy definition is unavailable."); continue; }
                 npc = World.spawnNpc(definition.id, endpoint.male() ? 0 : 1, new Vector3f(endpoint.x(), endpoint.y(), endpoint.z()), new Quaternion(endpoint.rx(), endpoint.ry(), endpoint.rz(), endpoint.rw()));
                 if (npc == null) { ServiceNpcPlugin.logger().warn("Could not rehydrate " + endpoint.name()); continue; }
-                ServiceNpc replacement = fromNpc(npc, endpoint.type(), endpoint.name(), endpoint.male(), endpoint.accountId(), endpoint.outfit());
+                ServiceNpc replacement = fromNpc(npc, endpoint.type(), endpoint.name(), endpoint.male(), endpoint.accountId(), endpoint.outfit(), endpoint.factionId());
                 repository.replaceId(endpoint.npcId(), replacement); endpoint = replacement;
             }
             initialize(npc, endpoint); ensureAccount(endpoint);
         }} catch (SQLException ex) { ServiceNpcPlugin.logger().error("Cannot rehydrate service NPCs: " + ex.getMessage()); }
     }
     public void create(Player player, ServiceType type, boolean male) {
-        if (player == null || !player.isAdmin()) { message(player, "tc.service.admin.required"); return; }
+        create(player, type, male, false);
+    }
+    public synchronized void createFaction(Player player, ServiceType type, boolean male) {
+        create(player, type, male, true);
+    }
+    private synchronized void create(Player player, ServiceType type, boolean male, boolean factionOwned) {
+        int factionId = 0;
+        String accountId = "service-npc:" + UUID.randomUUID();
+        if (factionOwned) {
+            Integer found = player == null ? null : factions.factionIdForPlayer(player.getDbID());
+            Integer limit = found == null ? null : factions.serviceNpcLicenses(found);
+            if (found == null || !factions.canManageServiceNpc(player.getDbID()) || limit == null
+                    || countForFaction(found) >= limit) { message(player, "tc.service.faction.license.required"); return; }
+            accountId = factions.factionAccountId(found);
+            if (accountId == null || accountId.isBlank()) { message(player, "tc.service.wallet.unavailable"); return; }
+            factionId = found;
+        } else if (player == null || !player.isAdmin()) { message(player, "tc.service.admin.required"); return; }
         var definition = Definitions.getNpcDefinition("dummy");
         if (definition == null) { message(player, "tc.service.create.failed"); return; }
         Npc npc = World.spawnNpc(definition.id, male ? 0 : 1, player.getPosition(), player.getRotation());
         if (npc == null) { message(player, "tc.service.create.failed"); return; }
         String prefix = i18n.get("tc.service.ui.identity." + type.key(), player);
         String name = uniqueName(prefix, male);
-        ServiceNpc endpoint = fromNpc(npc, type, name, male, "service-npc:" + UUID.randomUUID(), "");
+        ServiceNpc endpoint = fromNpc(npc, type, name, male, accountId, "", factionId);
         try { repository.save(endpoint); initialize(npc, endpoint); if (!ensureAccount(endpoint)) { repository.delete(endpoint.npcId()); npc.delete(); message(player, "tc.service.wallet.unavailable"); return; } message(player, "tc.service.create.success", "PH_NAME", name); }
         catch (SQLException ex) { npc.delete(); ServiceNpcPlugin.logger().error("Cannot create service NPC: " + ex.getMessage()); message(player, "tc.service.create.failed"); }
     }
     public void move(Player player, long id) {
-        if (player == null || !player.isAdmin()) { message(player, "tc.service.admin.required"); return; }
         try { ServiceNpc endpoint = repository.find(id).orElse(null); if (endpoint == null) { message(player,"tc.service.admin.notfound"); return; }
+            if (!canManage(player, endpoint)) { message(player,"tc.service.admin.required"); return; }
             Npc npc = World.getNpc(id); if (npc == null || npc.isDead()) { message(player,"tc.service.admin.notfound"); return; }
-            npc.setPosition(player.getPosition()); npc.setRotation(player.getRotation()); repository.save(fromNpc(npc, endpoint.type(), endpoint.name(), endpoint.male(), endpoint.accountId(), endpoint.outfit())); message(player,"tc.service.admin.moved");
+            npc.setPosition(player.getPosition()); npc.setRotation(player.getRotation()); repository.save(fromNpc(npc, endpoint.type(), endpoint.name(), endpoint.male(), endpoint.accountId(), endpoint.outfit(), endpoint.factionId())); message(player,"tc.service.admin.moved");
         } catch (SQLException ex) { ServiceNpcPlugin.logger().error("Cannot move service NPC: " + ex.getMessage()); }
     }
-    public void rename(Player player, long id, String name) {
-        if (player == null || !player.isAdmin() || name == null || name.isBlank() || name.length() > 120) { message(player,"tc.service.admin.invalid"); return; }
-        try { ServiceNpc old=repository.find(id).orElse(null); if(old==null){message(player,"tc.service.admin.notfound");return;} ServiceNpc updated=new ServiceNpc(old.npcId(),old.type(),name.trim(),old.male(),old.x(),old.y(),old.z(),old.rx(),old.ry(),old.rz(),old.rw(),old.accountId(),old.outfit()); repository.save(updated); Npc npc=World.getNpc(id); if(npc!=null&&!npc.isDead()) npc.setName(updated.name()); new WalletBridge(plugin).updateSystemAccountDisplayName(updated.accountId(),updated.name(),PLUGIN_NAME); message(player,"tc.service.admin.renamed"); } catch(SQLException ex){ServiceNpcPlugin.logger().error("Cannot rename service NPC: "+ex.getMessage());}
+    public void teleport(Player player, long id) {
+        try {
+            ServiceNpc endpoint = repository.find(id).orElse(null);
+            if (!canManage(player, endpoint)) { message(player,"tc.service.admin.required"); return; }
+            player.setPosition(new Vector3f(endpoint.x() + 2f, endpoint.y(), endpoint.z()));
+        } catch (SQLException ex) { ServiceNpcPlugin.logger().error("Cannot teleport to service NPC: " + ex.getMessage()); }
     }
-    public void nextOutfit(Player player, long id) { if (player == null || !player.isAdmin()) { message(player,"tc.service.admin.required"); return; } try { ServiceNpc old=repository.find(id).orElse(null);if(old==null)return;OutfitCatalog.Outfit next=outfits.next(old.outfit(),old.accountId());if(next==null){message(player,"tc.service.admin.invalid");return;}ServiceNpc updated=new ServiceNpc(old.npcId(),old.type(),old.name(),old.male(),old.x(),old.y(),old.z(),old.rx(),old.ry(),old.rz(),old.rw(),old.accountId(),next.key());repository.save(updated);Npc npc=World.getNpc(id);if(npc!=null)initialize(npc,updated); }catch(SQLException ex){ServiceNpcPlugin.logger().error("Cannot change service NPC outfit: "+ex.getMessage());} }
+    public void rename(Player player, long id, String name) {
+        if (name == null || name.isBlank() || name.length() > 120) { message(player,"tc.service.admin.invalid"); return; }
+        try { ServiceNpc old=repository.find(id).orElse(null); if(old==null){message(player,"tc.service.admin.notfound");return;} if(!canManage(player,old)){message(player,"tc.service.admin.required");return;} ServiceNpc updated=new ServiceNpc(old.npcId(),old.type(),name.trim(),old.male(),old.x(),old.y(),old.z(),old.rx(),old.ry(),old.rz(),old.rw(),old.accountId(),old.outfit(),old.factionId()); repository.save(updated); Npc npc=World.getNpc(id); if(npc!=null&&!npc.isDead()) npc.setName(updated.name()); if(old.factionId()==0)new WalletBridge(plugin).updateSystemAccountDisplayName(updated.accountId(),updated.name(),PLUGIN_NAME); message(player,"tc.service.admin.renamed"); } catch(SQLException ex){ServiceNpcPlugin.logger().error("Cannot rename service NPC: "+ex.getMessage());}
+    }
+    public void nextOutfit(Player player, long id) { if (player == null || !player.isAdmin()) { message(player,"tc.service.admin.required"); return; } try { ServiceNpc old=repository.find(id).orElse(null);if(old==null)return;OutfitCatalog.Outfit next=outfits.next(old.outfit(),old.accountId());if(next==null){message(player,"tc.service.admin.invalid");return;}ServiceNpc updated=new ServiceNpc(old.npcId(),old.type(),old.name(),old.male(),old.x(),old.y(),old.z(),old.rx(),old.ry(),old.rz(),old.rw(),old.accountId(),next.key(),old.factionId());repository.save(updated);Npc npc=World.getNpc(id);if(npc!=null)initialize(npc,updated); }catch(SQLException ex){ServiceNpcPlugin.logger().error("Cannot change service NPC outfit: "+ex.getMessage());} }
     public boolean dissolve(Player player, long id) {
-        if (player == null || !player.isAdmin()) { message(player,"tc.service.admin.required"); return false; }
-        try { ServiceNpc endpoint=repository.find(id).orElse(null); if(endpoint==null){message(player,"tc.service.admin.notfound");return false;} if(repository.hasOpenJobs(id)){message(player,"tc.service.admin.jobs.open");return false;} if(!settleAndArchive(endpoint)){message(player,"tc.service.admin.settlement.failed");return false;} repository.delete(id); Npc npc=World.getNpc(id); if(npc!=null&&!npc.isDead())npc.delete(); message(player,"tc.service.admin.dissolved","PH_NAME",endpoint.name()); return true; } catch(SQLException ex){ServiceNpcPlugin.logger().error("Cannot dissolve service NPC: "+ex.getMessage()); message(player,"tc.service.admin.settlement.failed"); return false;}
+        try { ServiceNpc endpoint=repository.find(id).orElse(null); if(endpoint==null){message(player,"tc.service.admin.notfound");return false;} if(!canManage(player,endpoint)){message(player,"tc.service.admin.required");return false;} if(repository.hasOpenJobs(id)){message(player,"tc.service.admin.jobs.open");return false;} if(endpoint.factionId()==0 && !settleAndArchive(endpoint)){message(player,"tc.service.admin.settlement.failed");return false;} repository.delete(id); Npc npc=World.getNpc(id); if(npc!=null&&!npc.isDead())npc.delete(); message(player,"tc.service.admin.dissolved","PH_NAME",endpoint.name()); return true; } catch(SQLException ex){ServiceNpcPlugin.logger().error("Cannot dissolve service NPC: "+ex.getMessage()); message(player,"tc.service.admin.settlement.failed"); return false;}
     }
     public void interact(PlayerNpcInteractionEvent event) {
         try { ServiceNpc endpoint=repository.find(event.getNpc().getGlobalID()).orElse(null); if(endpoint==null)return; event.setCancelled(true); new ServiceNpcOverlay(plugin,event.getPlayer(),endpoint,this,i18n,jobs).open(); } catch(SQLException ex){ServiceNpcPlugin.logger().error("Cannot open service NPC: "+ex.getMessage());}
     }
     public List<ServiceNpc> endpoints() { try { return repository.all(); } catch(SQLException ex) { ServiceNpcPlugin.logger().error("Cannot list service NPCs: "+ex.getMessage()); return List.of(); } }
-    private boolean ensureAccount(ServiceNpc endpoint) { WalletBridge wallet=new WalletBridge(plugin); return wallet.isAvailable() && wallet.hasSystemAccountApi() && wallet.createSystemAccount(endpoint.accountId(),"SERVICE_NPC",endpoint.name(),PLUGIN_NAME).success(); }
+    public int countForFaction(int factionId) { try { return factionId <= 0 ? 0 : repository.countForFaction(factionId); } catch(SQLException ex) { ServiceNpcPlugin.logger().error("Cannot count faction service NPCs: "+ex.getMessage()); return Integer.MAX_VALUE; } }
+    public boolean canManage(Player player, ServiceNpc endpoint) { return player != null && endpoint != null && (player.isAdmin()
+            || endpoint.factionId() > 0 && factions.canManageServiceNpc(player.getDbID())
+            && Integer.valueOf(endpoint.factionId()).equals(factions.factionIdForPlayer(player.getDbID()))); }
+    public boolean canCreateFaction(Player player) { return player != null && factions.canManageServiceNpc(player.getDbID())
+            && factions.factionIdForPlayer(player.getDbID()) != null; }
+    private boolean ensureAccount(ServiceNpc endpoint) { WalletBridge wallet=new WalletBridge(plugin); return wallet.isAvailable() && wallet.hasSystemAccountApi() && (endpoint.factionId()>0
+            ? wallet.systemAccount(endpoint.accountId()).success()
+            : wallet.createSystemAccount(endpoint.accountId(),"SERVICE_NPC",endpoint.name(),PLUGIN_NAME).success()); }
     private boolean settleAndArchive(ServiceNpc endpoint) { WalletBridge wallet=new WalletBridge(plugin); if(!wallet.isAvailable()||!wallet.hasSystemAccountApi())return false; var account=wallet.systemAccount(endpoint.accountId()); if(!account.success())return "ACCOUNT_NOT_FOUND".equals(account.errorCode()); String world=wallet.worldSystemAccountId(); if(world.isBlank())return false; for(var balance:wallet.systemAccountBalances(endpoint.accountId())) { if(balance.balance()<0)return false; if(balance.balance()>0&&!wallet.transferSystemToSystemIdempotent(endpoint.accountId(),world,balance.balance(),"Dissolved service NPC",balance.currencyIdentifier(),PLUGIN_NAME,"service-npc-dissolve-"+endpoint.npcId()+"-"+balance.currencyIdentifier()).success())return false; } return wallet.archiveSystemAccount(endpoint.accountId(),PLUGIN_NAME).success(); }
-    private ServiceNpc fromNpc(Npc npc, ServiceType type, String name, boolean male, String account, String outfit) { Vector3f p=npc.getPosition(); Quaternion r=npc.getRotation(); return new ServiceNpc(npc.getGlobalID(),type,name,male,p.x,p.y,p.z,r.x,r.y,r.z,r.w,account,outfit); }
+    private ServiceNpc fromNpc(Npc npc, ServiceType type, String name, boolean male, String account, String outfit, int factionId) { Vector3f p=npc.getPosition(); Quaternion r=npc.getRotation(); return new ServiceNpc(npc.getGlobalID(),type,name,male,p.x,p.y,p.z,r.x,r.y,r.z,r.w,account,outfit,factionId); }
     private String uniqueName(String prefix, boolean male) { try { java.util.Set<String> used=repository.all().stream().map(ServiceNpc::name).collect(java.util.stream.Collectors.toSet()); for(int attempt=0;attempt<20;attempt++){String candidate=prefix+" "+names.random(male,random);if(!used.contains(candidate))return candidate;} }catch(SQLException ignored){} return prefix+" "+names.random(male,random)+" "+Integer.toUnsignedString(random.nextInt(),36); }
     private void initialize(Npc npc, ServiceNpc endpoint) {
         plugin.executeDelayed(.1f, () -> configure(npc, endpoint));

@@ -8,6 +8,8 @@ Persistent Restorer and Augmenter NPC endpoints for Rising World. The plugin is 
 
 The Augmenter displays modifier and required material names in the player's game language.
 
+The radial menu provides a management overlay with Restorer and Augmenter tabs. Administrators see global and faction NPCs; faction leaders and officers see and manage their own faction NPCs. Their creation is limited by faction Service NPC licenses, and all faction NPCs use the faction account. Dissolving one never settles or archives that shared account.
+
 ## Administration
 
 `/osn create restorer male`, `/osn create restorer female`, `/osn create augmenter male`, and `/osn create augmenter female` create endpoints at the administrator position. `/osn move <npc-id>`, `/osn rename <npc-id> <name>`, and `/osn dissolve <npc-id>` manage them. Dissolve refuses open jobs and settles positive Wallet balances to the world account before account archival.

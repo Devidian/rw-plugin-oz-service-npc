@@ -4,6 +4,12 @@
 
 ## Unreleased
 
+## [0.4.0] - 2026-10-13 | Service NPC management
+
+- feat: add a management overlay for global and faction service NPCs, with native action dialogs.
+- feat: let faction leaders and officers create NPCs within license limits using the faction account.
+- ui: render management and row-action icons as images in both styles, avoiding unsupported font glyphs.
+
 ## [0.3.1] - 2026-10-08 | Localized material confirmation
 
 - fix: localize Augmenter material names in the confirmation dialog using the player's game language.

@@ -9,6 +9,7 @@ Persistent Restorer and Augmenter NPC endpoints for Rising World. The plugin is 
 The Augmenter displays modifier and required material names in the player's game language.
 
 The radial menu provides a management overlay with Restorer and Augmenter tabs. Administrators see global and faction NPCs; faction leaders and officers see and manage their own faction NPCs. Their creation is limited by faction Service NPC licenses, and all faction NPCs use the faction account. Dissolving one never settles or archives that shared account.
+The management overlay and an NPC's own settings use native confirmation dialogs before dissolution; declining leaves the NPC unchanged.
 
 ## Administration
 

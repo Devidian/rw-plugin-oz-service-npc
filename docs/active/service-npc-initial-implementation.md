@@ -18,6 +18,7 @@ Provide the standalone `OZ - Service NPC` plugin, derived from the Maven templat
 - [x] Default Restorer duration/cost policy, names, clothing sets and Augmenter modifier/material/time policy are packaged as editable world-scoped JSON inputs. Defaults are copied once as `names.<world>.json`, `outfits.<world>.json` and `augmentation.<world>.json`; later deployments retain those files.
 - [ ] Restorer: persistent custody record, payment to the NPC system account, exact item-state snapshot, minute-precise duration display, player/admin order log, delayed idempotent Mail delivery, and refund handling when removal fails are implemented. Runtime acceptance must verify payment, removal, restart persistence, delivery and recovery paths.
 - [x] Augmenter: modifier pools and their ordered tier levels are configured in JSON, including level 0 as the non-serviceable source band. Material custody, payment, delivery and runtime acceptance are implemented.
+- [x] Require a native confirmation before dissolving an NPC from its own settings; preserve the existing confirmation in the management overview.
 
 ## Follow-up architecture review
 
@@ -26,11 +27,13 @@ Provide the standalone `OZ - Service NPC` plugin, derived from the Maven templat
 ## Invariants and risks
 
 - A job cannot be accepted unless Wallet and Mail are available; payment must be reversible if custody/delivery preparation fails.
-- Dissolving an NPC is denied while jobs are open. Once no jobs remain, every positive account balance is transferred idempotently to the world account before archival.
+- Dissolving an NPC is denied while jobs are open. For a global NPC, positive balances are transferred idempotently to the world account before account archival. Dissolving a faction NPC leaves its shared faction account intact.
 - Rehydration replaces only the NPC id while retaining endpoint/account identity.
 - Names, config and player-visible messages are packaged defaults; world files are never overwritten by deployment.
 
 ## Validation and rollback
+
+Native dissolution follow-up on 2026-10-14: the NPC settings button now asks in a native Yes/No dialog and describes account handling for global or faction NPCs. The management overview already had a native confirmation. Local Maven test and Java 25 package completed; JSON, PluginAPI and diff checks passed. Before uploading only Service NPC and Marketplace to Development, both plugin data sets were saved at `development-server/backups/npc-native-dialogs-20261014-193203`. The uploaded Service NPC JAR hash matched the isolated build, and Development logged `OZ Service NPC enabled` and `RELOADED ALL PLUGINS` at 19:33 UTC. Player confirmation and cancellation need an in-game check. Roll back by restoring the Service NPC JAR and i18n files from that backup; retain its database and world catalogs.
 
 - [x] `mvn -B -DskipTests package` and entrypoint verifier.
 - [ ] Build a clean package and upload it beside Wallet/Mail/Tools on Development. The server console stdin is `/dev/null`, so an administrator must issue `reloadplugins` in-game before startup and interaction evidence can be collected.

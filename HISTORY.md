@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- fix: confirm dissolution from an NPC's own settings with a native dialog and explain global versus faction account handling.
+
 ## [0.4.0] - 2026-10-13 | Service NPC management
 
 - feat: add a management overlay for global and faction service NPCs, with native action dialogs.

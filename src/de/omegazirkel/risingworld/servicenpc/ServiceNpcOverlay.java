@@ -1,6 +1,7 @@
 package de.omegazirkel.risingworld.servicenpc;
 
 import de.omegazirkel.risingworld.ServiceNpcPlugin;
+import de.omegazirkel.risingworld.OZTools;
 import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.ui.BasePluginOverlayWithTabs;
 import de.omegazirkel.risingworld.tools.ui.AdvancedButton;
@@ -16,6 +17,7 @@ import net.risingworld.api.Server;
 import net.risingworld.api.definitions.Items.Modifier;
 import net.risingworld.api.objects.Player;
 import net.risingworld.api.ui.UILabel;
+import net.risingworld.api.ui.MessageBoxButtons;
 import net.risingworld.api.ui.UITextField;
 import net.risingworld.api.ui.UITarget;
 import net.risingworld.api.ui.UIScrollView;
@@ -35,6 +37,7 @@ import net.risingworld.api.assets.TextureAsset;
 public final class ServiceNpcOverlay extends BasePluginOverlayWithTabs {
     private enum ServiceTab { SERVICE, SETTINGS, JOB_LOG }
     private final ServiceNpc endpoint;
+    private final ServiceNpcPlugin plugin;
     private final I18n texts;
     private final ServiceJobService jobs;
     private final ServiceNpcManager manager;
@@ -42,7 +45,7 @@ public final class ServiceNpcOverlay extends BasePluginOverlayWithTabs {
 
     public ServiceNpcOverlay(ServiceNpcPlugin plugin, Player player, ServiceNpc endpoint, ServiceNpcManager manager, I18n texts, ServiceJobService jobs) {
         super(player, ignored -> player.deleteAttribute("oz.service-npc.overlay"));
-        this.endpoint = endpoint; this.manager = manager; this.texts = texts; this.jobs = jobs;
+        this.plugin = plugin; this.endpoint = endpoint; this.manager = manager; this.texts = texts; this.jobs = jobs;
         titleLabelKey = "tc.service.ui.title"; descLabelKey = "tc.service.ui.subtitle"; legendLabelKey = "tc.service.ui.legend";
         rebuild();
     }
@@ -71,7 +74,27 @@ public final class ServiceNpcOverlay extends BasePluginOverlayWithTabs {
         AdvancedButton rename=AdvancedButtonFactory.defaultButton(t().get("tc.service.ui.settings.rename",uiPlayer),ignored->name.getCurrentText(uiPlayer,value->{manager.rename(uiPlayer,endpoint.npcId(),value);rebuild();}));rename.setPivot(Pivot.UpperLeft);rename.setPosition(432,64,false);rename.setSize(140,30,false);body.addChild(rename);
         AdvancedButton move=AdvancedButtonFactory.defaultButton(t().get("tc.service.ui.settings.move",uiPlayer),ignored->{manager.move(uiPlayer,endpoint.npcId());rebuild();});move.setPivot(Pivot.UpperLeft);move.setPosition(18,112,false);move.setSize(180,32,false);body.addChild(move);
         AdvancedButton outfit=AdvancedButtonFactory.defaultButton(t().get("tc.service.ui.settings.outfit",uiPlayer),ignored->{manager.nextOutfit(uiPlayer,endpoint.npcId());rebuild();});outfit.setPivot(Pivot.UpperLeft);outfit.setPosition(212,112,false);outfit.setSize(180,32,false);body.addChild(outfit);
-        AdvancedButton dissolve=AdvancedButtonFactory.danger(t().get("tc.service.ui.settings.dissolve",uiPlayer),ignored->{if(manager.dissolve(uiPlayer,endpoint.npcId()))close();});dissolve.setPivot(Pivot.UpperLeft);dissolve.setPosition(18,170,false);dissolve.setSize(180,32,false);body.addChild(dissolve);
+        AdvancedButton dissolve=AdvancedButtonFactory.danger(t().get("tc.service.ui.settings.dissolve",uiPlayer),ignored->confirmDissolve());dissolve.setPivot(Pivot.UpperLeft);dissolve.setPosition(18,170,false);dissolve.setSize(180,32,false);body.addChild(dissolve);
+    }
+    private void confirmDissolve() {
+        if (!manager.canManage(uiPlayer, endpoint)) return;
+        String title = t().get("tc.service.ui.settings.dissolve.confirm.title", uiPlayer);
+        String key = endpoint.factionId() > 0 ? "tc.service.ui.settings.dissolve.confirm.faction"
+                : "tc.service.ui.settings.dissolve.confirm.global";
+        String message = t().get(key, uiPlayer).replace("PH_NAME", endpoint.name());
+        uiPlayer.removeUIElement(this);
+        uiPlayer.closeAllActiveUIWindows();
+        OZTools.runAfterModalClose(uiPlayer, () -> uiPlayer.showMessageBox(MessageBoxButtons.Yes_No,
+                title, message, 0, answer -> plugin.enqueue(() -> {
+                    if (!uiPlayer.isConnected()) return;
+                    if (answer != null && answer == 0 && manager.canManage(uiPlayer, endpoint)
+                            && manager.dissolve(uiPlayer, endpoint.npcId())) {
+                        close();
+                        return;
+                    }
+                    rebuild();
+                    uiPlayer.addUIElement(this, UITarget.Modal);
+                })));
     }
     private void setupAugmenter() {
         java.util.List<ServiceInventoryTransfer.Candidate> values = jobs.augmentCandidates(uiPlayer);

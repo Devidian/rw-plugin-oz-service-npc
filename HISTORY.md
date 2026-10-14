@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+## [0.4.1] - 2026-10-14 | Native dissolution confirmation
+
 - fix: confirm dissolution from an NPC's own settings with a native dialog and explain global versus faction account handling.
 
 ## [0.4.0] - 2026-10-13 | Service NPC management

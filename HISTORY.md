@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+## [0.5.0] - 2026-10-15 | Clothing controls and more augmentable tools
+
+- Service NPC settings now offer random catalog clothing and a copy of the player's worn clothing for authorized global and faction managers. Serialized clothing persists in the existing outfit field. The augmenter also accepts the explicitly listed axes, knives, hammers, scythes, sickles, chainsaw, and mining drill.
+
 ## [0.4.2] - 2026-10-15 | Discord event threads
 
 - ui: add localized Restorer and Augmenter Discord thread-topic settings next to their channel settings.

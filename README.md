@@ -148,3 +148,7 @@ are no longer included. Runtime settings remain world-scoped as
 its backup remains supported. Updating the package does not delete old files
 already present on the server. Use `mvn clean package` for a fresh local
 package; ZIP assembly also excludes stale legacy settings and translations.
+
+## Backlog update (2026-10-15)
+
+Service NPC settings now offer random catalog clothing and a copy of the player's worn clothing for authorized global and faction managers. Serialized clothing persists in the existing outfit field. The augmenter also accepts the explicitly listed axes, knives, hammers, scythes, sickles, chainsaw, and mining drill.

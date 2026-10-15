@@ -1,0 +1,1 @@
+- Service NPC clothing controls and additional augmenter tool eligibility.

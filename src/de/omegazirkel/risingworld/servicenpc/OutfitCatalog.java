@@ -32,6 +32,7 @@ public final class OutfitCatalog {
     }
 
     public Outfit initial(String seed) { return outfits.isEmpty() ? null : outfits.get(Math.floorMod(seed.hashCode(), outfits.size())); }
+    public Outfit random(java.util.Random random) { return outfits.isEmpty() ? null : outfits.get(random.nextInt(outfits.size())); }
     public Outfit find(String key, String seed) {
         if (key != null && !key.isBlank()) for (Outfit outfit : outfits) if (outfit.key().equalsIgnoreCase(key)) return outfit;
         return initial(seed);

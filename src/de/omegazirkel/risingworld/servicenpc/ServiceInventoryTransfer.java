@@ -15,6 +15,11 @@ import net.risingworld.api.objects.Player;
 
 /** Narrow custody boundary for one repairable inventory item. */
 public final class ServiceInventoryTransfer {
+    private static final java.util.Set<String> AUGMENTABLE_TOOLS = java.util.Set.of(
+            "axe", "axesteel", "primitiveaxe", "pickaxe", "pickaxesteel",
+            "combatknife", "huntingknife", "primitiveknife", "primitiveknife2",
+            "sledgehammer", "sledgehammersteel", "scythe", "scythesteel",
+            "sickle", "sicklesteel", "chainsaw", "miningdrill");
     private ServiceInventoryTransfer() { }
 
     public static List<Candidate> repairCandidates(Player player) {
@@ -37,7 +42,7 @@ public final class ServiceInventoryTransfer {
         if (player == null || player.getInventory() == null || player.getInventory().getAllItems() == null) return List.of();
         List<Candidate> values = new ArrayList<>();
         for (Item item : player.getInventory().getAllItems()) {
-            if (item == null || item.getStack() < 1 || itemName(item).isBlank() || !isWeapon(item)) continue;
+            if (item == null || !item.isValid() || item.getStack() < 1 || itemName(item).isBlank() || !isAugmentable(item)) continue;
             values.add(new Candidate(itemName(item), displayName(item, player.getLanguage()), item.getVariant(), item.getDurability(), maxDurability(item), item.getStatus(), modifierName(item), color(item)));
         }
         values.sort(Comparator.comparing(Candidate::displayName, String.CASE_INSENSITIVE_ORDER));
@@ -94,6 +99,9 @@ public final class ServiceInventoryTransfer {
         ItemDefinition definition = item.getDefinition();
         if (definition == null) definition = Definitions.getItemDefinition(item.getTypeID());
         return definition != null && definition.category == Category.Weapon;
+    }
+    private static boolean isAugmentable(Item item) {
+        return isWeapon(item) || AUGMENTABLE_TOOLS.contains(itemName(item).toLowerCase(java.util.Locale.ROOT));
     }
 
     private static String itemName(Item item) {

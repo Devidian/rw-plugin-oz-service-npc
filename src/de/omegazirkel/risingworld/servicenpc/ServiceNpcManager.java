@@ -96,7 +96,28 @@ public final class ServiceNpcManager {
         if (name == null || name.isBlank() || name.length() > 120) { message(player,"tc.service.admin.invalid"); return; }
         try { ServiceNpc old=repository.find(id).orElse(null); if(old==null){message(player,"tc.service.admin.notfound");return;} if(!canManage(player,old)){message(player,"tc.service.admin.required");return;} ServiceNpc updated=new ServiceNpc(old.npcId(),old.type(),name.trim(),old.male(),old.x(),old.y(),old.z(),old.rx(),old.ry(),old.rz(),old.rw(),old.accountId(),old.outfit(),old.factionId()); repository.save(updated); Npc npc=World.getNpc(id); if(npc!=null&&!npc.isDead()) npc.setName(updated.name()); if(old.factionId()==0)new WalletBridge(plugin).updateSystemAccountDisplayName(updated.accountId(),updated.name(),PLUGIN_NAME); message(player,"tc.service.admin.renamed"); } catch(SQLException ex){ServiceNpcPlugin.logger().error("Cannot rename service NPC: "+ex.getMessage());}
     }
-    public void nextOutfit(Player player, long id) { if (player == null || !player.isAdmin()) { message(player,"tc.service.admin.required"); return; } try { ServiceNpc old=repository.find(id).orElse(null);if(old==null)return;OutfitCatalog.Outfit next=outfits.next(old.outfit(),old.accountId());if(next==null){message(player,"tc.service.admin.invalid");return;}ServiceNpc updated=new ServiceNpc(old.npcId(),old.type(),old.name(),old.male(),old.x(),old.y(),old.z(),old.rx(),old.ry(),old.rz(),old.rw(),old.accountId(),next.key(),old.factionId());repository.save(updated);Npc npc=World.getNpc(id);if(npc!=null)initialize(npc,updated); }catch(SQLException ex){ServiceNpcPlugin.logger().error("Cannot change service NPC outfit: "+ex.getMessage());} }
+    public void randomOutfit(Player player, long id) {
+        try {
+            ServiceNpc old = repository.find(id).orElse(null);
+            if (!canManage(player, old)) { message(player,"tc.service.admin.required"); return; }
+            OutfitCatalog.Outfit outfit = outfits.random(random);
+            if (outfit == null) { message(player,"tc.service.admin.invalid"); return; }
+            saveOutfit(old, outfit.key());
+        } catch (SQLException ex) { ServiceNpcPlugin.logger().error("Cannot change service NPC outfit: " + ex.getMessage()); }
+    }
+    public void copyClothing(Player player, long id) {
+        try {
+            ServiceNpc old = repository.find(id).orElse(null);
+            if (!canManage(player, old)) { message(player,"tc.service.admin.required"); return; }
+            saveOutfit(old, "clothes:" + java.util.Base64.getEncoder().encodeToString(player.getClothes().serialize()));
+        } catch (SQLException | RuntimeException ex) { ServiceNpcPlugin.logger().error("Cannot copy service NPC clothing: " + ex.getMessage()); }
+    }
+    private void saveOutfit(ServiceNpc old, String outfit) throws SQLException {
+        ServiceNpc updated = new ServiceNpc(old.npcId(),old.type(),old.name(),old.male(),old.x(),old.y(),old.z(),old.rx(),old.ry(),old.rz(),old.rw(),old.accountId(),outfit,old.factionId());
+        repository.save(updated);
+        Npc npc = World.getNpc(old.npcId());
+        if (npc != null) applyClothing(npc, updated);
+    }
     public boolean dissolve(Player player, long id) {
         try { ServiceNpc endpoint=repository.find(id).orElse(null); if(endpoint==null){message(player,"tc.service.admin.notfound");return false;} if(!canManage(player,endpoint)){message(player,"tc.service.admin.required");return false;} if(repository.hasOpenJobs(id)){message(player,"tc.service.admin.jobs.open");return false;} if(endpoint.factionId()==0 && !settleAndArchive(endpoint)){message(player,"tc.service.admin.settlement.failed");return false;} repository.delete(id); Npc npc=World.getNpc(id); if(npc!=null&&!npc.isDead())npc.delete(); message(player,"tc.service.admin.dissolved","PH_NAME",endpoint.name()); return true; } catch(SQLException ex){ServiceNpcPlugin.logger().error("Cannot dissolve service NPC: "+ex.getMessage()); message(player,"tc.service.admin.settlement.failed"); return false;}
     }
@@ -138,15 +159,26 @@ public final class ServiceNpcManager {
                 skin.setHairstyle(endpoint.male() ? new byte[]{58,55,62,48}[variant] : new byte[]{108,105,112,101}[variant]);
                 skin.setBeard((byte) (endpoint.male() ? variant % 3 : -1));
             }
-            npc.getClothes().removeAll();
+            applyClothing(npc, endpoint);
+        } catch (Exception exception) {
+            ServiceNpcPlugin.logger().error("Cannot initialize Service NPC " + endpoint.npcId() + ": " + exception.getMessage());
+        }
+    }
+    private void applyClothing(Npc npc, ServiceNpc endpoint) {
+        try {
+            if (endpoint.outfit().startsWith("clothes:")) {
+                npc.getClothes().deserialize(java.util.Base64.getDecoder().decode(endpoint.outfit().substring(8)));
+                return;
+            }
             OutfitCatalog.Outfit outfit = outfits.find(endpoint.outfit(), endpoint.accountId());
             if (outfit == null) return;
+            npc.getClothes().removeAll();
             for (String garment : outfit.clothing()) {
                 ClothingDefinition definition = Definitions.getClothingDefinition(garment);
                 if (definition != null) npc.getClothes().add((short) definition.id);
             }
         } catch (Exception exception) {
-            ServiceNpcPlugin.logger().error("Cannot initialize Service NPC " + endpoint.npcId() + ": " + exception.getMessage());
+            ServiceNpcPlugin.logger().error("Cannot apply service NPC clothing " + endpoint.npcId() + ": " + exception.getMessage());
         }
     }
     private void message(Player p,String key,String... replacements) { if(p==null)return; String value=i18n.get(key,p); for(int i=0;i+1<replacements.length;i+=2)value=value.replace(replacements[i],replacements[i+1]); if(key.endsWith(".success")||key.endsWith(".renamed")||key.endsWith(".moved")||key.endsWith(".dissolved"))p.showSuccessMessageBox(i18n.get("tc.service.ui.title",p),value);else if(key.contains("failed")||key.contains("settlement"))p.showErrorMessageBox(i18n.get("tc.service.ui.title",p),value);else p.showWarningMessageBox(i18n.get("tc.service.ui.title",p),value); }

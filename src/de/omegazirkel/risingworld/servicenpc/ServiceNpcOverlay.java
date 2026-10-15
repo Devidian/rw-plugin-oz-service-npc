@@ -56,7 +56,7 @@ public final class ServiceNpcOverlay extends BasePluginOverlayWithTabs {
     @Override protected void setupTabs() {
         setupTabContainer();
         addTab(t().get("tc.service.ui.tab.service", uiPlayer), 180, tab == ServiceTab.SERVICE, () -> select(ServiceTab.SERVICE));
-        if (uiPlayer.isAdmin()) {
+        if (manager.canManage(uiPlayer, endpoint)) {
             addTab(t().get("tc.service.ui.tab.settings", uiPlayer), 180, tab == ServiceTab.SETTINGS, true, () -> select(ServiceTab.SETTINGS));
         }
         addTab(t().get("tc.service.ui.tab.jobs", uiPlayer), 180, tab == ServiceTab.JOB_LOG, uiPlayer.isAdmin(), () -> select(ServiceTab.JOB_LOG));
@@ -73,7 +73,8 @@ public final class ServiceNpcOverlay extends BasePluginOverlayWithTabs {
         UITextField name=new UITextField(endpoint.name());name.setPivot(Pivot.UpperLeft);name.setPosition(18,64,false);name.setSize(400,30,false);name.setMaxCharacters(120);body.addChild(name);
         AdvancedButton rename=AdvancedButtonFactory.defaultButton(t().get("tc.service.ui.settings.rename",uiPlayer),ignored->name.getCurrentText(uiPlayer,value->{manager.rename(uiPlayer,endpoint.npcId(),value);rebuild();}));rename.setPivot(Pivot.UpperLeft);rename.setPosition(432,64,false);rename.setSize(140,30,false);body.addChild(rename);
         AdvancedButton move=AdvancedButtonFactory.defaultButton(t().get("tc.service.ui.settings.move",uiPlayer),ignored->{manager.move(uiPlayer,endpoint.npcId());rebuild();});move.setPivot(Pivot.UpperLeft);move.setPosition(18,112,false);move.setSize(180,32,false);body.addChild(move);
-        AdvancedButton outfit=AdvancedButtonFactory.defaultButton(t().get("tc.service.ui.settings.outfit",uiPlayer),ignored->{manager.nextOutfit(uiPlayer,endpoint.npcId());rebuild();});outfit.setPivot(Pivot.UpperLeft);outfit.setPosition(212,112,false);outfit.setSize(180,32,false);body.addChild(outfit);
+        AdvancedButton outfit=AdvancedButtonFactory.defaultButton(t().get("tc.service.ui.settings.random_outfit",uiPlayer),ignored->{manager.randomOutfit(uiPlayer,endpoint.npcId());rebuild();});outfit.setPivot(Pivot.UpperLeft);outfit.setPosition(212,112,false);outfit.setSize(180,32,false);body.addChild(outfit);
+        AdvancedButton copy=AdvancedButtonFactory.defaultButton(t().get("tc.service.ui.settings.copy_clothing",uiPlayer),ignored->{manager.copyClothing(uiPlayer,endpoint.npcId());rebuild();});copy.setPivot(Pivot.UpperLeft);copy.setPosition(408,112,false);copy.setSize(180,32,false);body.addChild(copy);
         AdvancedButton dissolve=AdvancedButtonFactory.danger(t().get("tc.service.ui.settings.dissolve",uiPlayer),ignored->confirmDissolve());dissolve.setPivot(Pivot.UpperLeft);dissolve.setPosition(18,170,false);dissolve.setSize(180,32,false);body.addChild(dissolve);
     }
     private void confirmDissolve() {

@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+## [0.4.2] - 2026-10-15 | Discord event threads
+
+- ui: add localized Restorer and Augmenter Discord thread-topic settings next to their channel settings.
+
 ## [0.4.1] - 2026-10-14 | Native dissolution confirmation
 
 - fix: confirm dissolution from an NPC's own settings with a native dialog and explain global versus faction account handling.

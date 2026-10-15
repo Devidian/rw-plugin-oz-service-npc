@@ -1,6 +1,7 @@
 # PLANS.md
 
 - [ ] Validate the next-300926 change on Development with a controlled player check.
+- [ ] Wire the existing Service NPC Discord channel and thread settings to a defined notification event when that event is specified.
 
 Planning is stored in repository-local docs.
 

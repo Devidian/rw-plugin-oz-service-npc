@@ -26,6 +26,8 @@
       "title": "Plugin Settings for PH_PLUGIN_NAME"
     },
     "setting": {
+      "restorerdiscordthreadtopic": {"label": "Restorer thread", "desc": "Blank uses the plugin display name. The same channel and thread name reuse one thread."},
+      "augmenterdiscordthreadtopic": {"label": "Augmenter thread", "desc": "Blank uses the plugin display name. The same channel and thread name reuse one thread."},
       "enablewelcomemessage": {
         "desc": "If true, this plugin sends a welcome message when a player joins.",
         "label": "Welcome message"

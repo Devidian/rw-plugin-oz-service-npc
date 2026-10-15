@@ -97,7 +97,9 @@ public class PluginSettings {
 				entry("restorerServiceFee", "tc.setting.restorerservicefee.label", "tc.setting.restorerservicefee.desc", AdminSettingsType.INTEGER, "5"),
 				AdminSettingsEntry.group("notifications", "tc.setting.notifications.label", "tc.setting.notifications.desc"),
 				entry("restorerDiscordChannelId", "tc.setting.restorerdiscordchannelid.label", "tc.setting.restorerdiscordchannelid.desc", AdminSettingsType.STRING, ""),
-				entry("augmenterDiscordChannelId", "tc.setting.augmenterdiscordchannelid.label", "tc.setting.augmenterdiscordchannelid.desc", AdminSettingsType.STRING, ""));
+				entry("restorerDiscordThreadTopic", "tc.setting.restorerdiscordthreadtopic.label", "tc.setting.restorerdiscordthreadtopic.desc", AdminSettingsType.STRING, ""),
+				entry("augmenterDiscordChannelId", "tc.setting.augmenterdiscordchannelid.label", "tc.setting.augmenterdiscordchannelid.desc", AdminSettingsType.STRING, ""),
+				entry("augmenterDiscordThreadTopic", "tc.setting.augmenterdiscordthreadtopic.label", "tc.setting.augmenterdiscordthreadtopic.desc", AdminSettingsType.STRING, ""));
 	}
 
 	private AdminSettingsEntry entry(String key, String label, String description, AdminSettingsType type) {

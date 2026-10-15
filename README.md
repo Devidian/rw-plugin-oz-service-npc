@@ -6,6 +6,8 @@ Players can hide the Service NPC shortcut in the plugin settings. It remains vis
 
 Persistent Restorer and Augmenter NPC endpoints for Rising World. The plugin is a standalone adaptation of `rw-plugin-maven-template` and depends at runtime on OZ Tools, OZ Wallet and OZ Mail.
 
+Admin settings expose `restorerDiscordChannelId` and `augmenterDiscordChannelId` with matching `restorerDiscordThreadTopic` and `augmenterDiscordThreadTopic` fields. A blank topic uses the plugin display name. These settings are reserved for Service NPC notifications; the current runtime does not send Discord messages from either service path.
+
 The Augmenter displays modifier and required material names in the player's game language.
 
 The radial menu provides a management overlay with Restorer and Augmenter tabs. Administrators see global and faction NPCs; faction leaders and officers see and manage their own faction NPCs. Their creation is limited by faction Service NPC licenses, and all faction NPCs use the faction account. Dissolving one never settles or archives that shared account.

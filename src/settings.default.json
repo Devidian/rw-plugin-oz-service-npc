@@ -3,5 +3,7 @@
   "restorerMaterialCostPercent": 25,
   "restorerServiceFee": 5,
   "restorerDiscordChannelId": "",
-  "augmenterDiscordChannelId": ""
+  "restorerDiscordThreadTopic": "",
+  "augmenterDiscordChannelId": "",
+  "augmenterDiscordThreadTopic": ""
 }

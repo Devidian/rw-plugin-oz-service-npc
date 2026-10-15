@@ -26,6 +26,8 @@
       "title": "Plugin Einstellungen für PH_PLUGIN_NAME"
     },
     "setting": {
+      "restorerdiscordthreadtopic": {"label": "Restaurator-Thread", "desc": "Leer verwendet den Plugin-Namen. Gleicher Kanal und Thread-Titel nutzen denselben Thread."},
+      "augmenterdiscordthreadtopic": {"label": "Meisterhandwerker-Thread", "desc": "Leer verwendet den Plugin-Namen. Gleicher Kanal und Thread-Titel nutzen denselben Thread."},
       "enablewelcomemessage": {
         "desc": "Wenn aktiv, sendet dieses Plugin eine Willkommensnachricht, wenn ein Spieler beitritt.",
         "label": "Willkommensnachricht"

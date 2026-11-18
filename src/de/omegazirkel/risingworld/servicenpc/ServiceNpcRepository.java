@@ -33,6 +33,30 @@ public final class ServiceNpcRepository {
     public void replaceId(long oldId, ServiceNpc replacement) throws SQLException { try(PreparedStatement s=db.prepareStatement("DELETE FROM service_npcs WHERE npc_id=?")){s.setLong(1,oldId);s.executeUpdate();} save(replacement); }
     public void delete(long id) throws SQLException { try(PreparedStatement s=db.prepareStatement("DELETE FROM service_npcs WHERE npc_id=?")){s.setLong(1,id);s.executeUpdate();} }
     public boolean hasOpenJobs(long id) throws SQLException { try(PreparedStatement s=db.prepareStatement("SELECT 1 FROM service_jobs WHERE npc_id=? AND status NOT IN ('COMPLETED','CANCELLED') LIMIT 1")){s.setLong(1,id);try(ResultSet r=s.executeQuery()){return r.next();}} }
+
+    public boolean playerErasureReady(int playerDbId) {
+        try (var statement = db.prepareStatement("""
+                SELECT 1 FROM service_jobs WHERE player_db_id = ?
+                AND status NOT IN ('COMPLETED', 'CANCELLED') LIMIT 1
+                """)) {
+            statement.setInt(1, playerDbId);
+            try (var rows = statement.executeQuery()) { return !rows.next(); }
+        } catch (SQLException ex) {
+            return false;
+        }
+    }
+
+    public boolean erasePlayerData(int playerDbId) throws SQLException {
+        if (!playerErasureReady(playerDbId)) return false;
+        try (var statement = db.prepareStatement("""
+                UPDATE service_jobs SET player_db_id = 0, player_name = '', language = 'en'
+                WHERE player_db_id = ? AND status IN ('COMPLETED', 'CANCELLED')
+                """)) {
+            statement.setInt(1, playerDbId);
+            statement.executeUpdate();
+            return true;
+        }
+    }
     public void saveJob(ServiceJob job) throws SQLException { try (PreparedStatement s=db.prepareStatement("INSERT INTO service_jobs(id,npc_id,player_db_id,player_name,type,accepted_at,completed_at,status,language,item_name,item_variant,item_durability,item_status,item_modifier,target_modifier,item_color,cost,currency,correlation_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")) { s.setString(1,job.id());s.setLong(2,job.npcId());s.setInt(3,job.playerDbId());s.setString(4,job.playerName());s.setString(5,job.type().name());s.setLong(6,job.acceptedAt());s.setLong(7,job.completedAt());s.setString(8,job.status());s.setString(9,job.language());s.setString(10,job.itemName());s.setInt(11,job.itemVariant());s.setInt(12,job.itemDurability());s.setShort(13,job.itemStatus());s.setString(14,job.itemModifier());s.setString(15,job.targetModifier());s.setInt(16,job.itemColor());s.setLong(17,job.cost());s.setString(18,job.currency());s.setString(19,job.correlationId());s.executeUpdate(); } }
     public void updateJobStatus(String id,String status) throws SQLException { try(PreparedStatement s=db.prepareStatement("UPDATE service_jobs SET status=? WHERE id=?")){s.setString(1,status);s.setString(2,id);s.executeUpdate();} }
     public void deleteJob(String id) throws SQLException { try(PreparedStatement s=db.prepareStatement("DELETE FROM service_jobs WHERE id=?")){s.setString(1,id);s.executeUpdate();} }

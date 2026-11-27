@@ -3,29 +3,77 @@ package de.omegazirkel.risingworld.servicenpc;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import de.omegazirkel.risingworld.ServiceNpcPlugin;
 import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.db.SQLiteConnectionFactory;
 import de.omegazirkel.risingworld.tools.settings.PlayerPluginAdminSettings;
 import de.omegazirkel.risingworld.tools.ui.PlayerPluginSettingsOverlay;
 import de.omegazirkel.risingworld.template.PluginSettings;
-import de.omegazirkel.risingworld.tools.ui.AssetManager;
-import de.omegazirkel.risingworld.tools.ui.MenuItem;
 import de.omegazirkel.risingworld.tools.ui.PluginInfoStatusProviders;
-import de.omegazirkel.risingworld.tools.ui.PluginMenuManager;
 import de.omegazirkel.risingworld.tools.ui.PluginShortcutVisibility;
 
 /** Composes template-provided runtime facilities with the Service NPC domain. */
 public final class ServiceNpcRuntime {
+    private final List<Runnable> uiRegistrations = new ArrayList<>();
     private de.omegazirkel.risingworld.tools.privacy.PlayerErasureService.Registration erasureRegistration;
     private final ServiceNpcPlugin plugin; private Connection db; private NameCatalog names; private OutfitCatalog outfits; private AugmentationCatalog augmentation; private ServiceNpcManager manager; private ServiceNpcEventHandler events; private ServiceJobService jobs; private PluginSettings settings;
     public ServiceNpcRuntime(ServiceNpcPlugin plugin){this.plugin=plugin;}
-    public void enable(){ I18n i18n=I18n.getInstance(plugin); settings=PluginSettings.getInstance(plugin);settings.initSettings();names=new NameCatalog();names.load(plugin);outfits=new OutfitCatalog();outfits.load(plugin);augmentation=new AugmentationCatalog();augmentation.load(plugin);db=SQLiteConnectionFactory.open(plugin);try{ServiceNpcRepository repository=new ServiceNpcRepository(db);repository.initialize();registerPlayerErasure(repository);jobs=new ServiceJobService(plugin,repository,i18n,settings,augmentation);manager=new ServiceNpcManager(plugin,repository,names,outfits,i18n,jobs);ServiceNpcPluginGUI gui=new ServiceNpcPluginGUI(plugin,manager,i18n);events=new ServiceNpcEventHandler(plugin,manager,gui,i18n);String name=plugin.getDescription("name");String version=plugin.getDescription("version");PluginInfoStatusProviders.registerProvider(new ServiceNpcPluginInfoStatusProvider(name,version,i18n));ServiceNpcPlayerPluginSettings playerSettings=new ServiceNpcPlayerPluginSettings(name,version,i18n);PluginShortcutVisibility.register(name,playerSettings::shortcutVisible);PlayerPluginSettingsOverlay.registerPlayerPluginSettings(playerSettings);PlayerPluginSettingsOverlay.registerPlayerPluginAdminSettings(new PlayerPluginAdminSettings(name,version,settings::adminSettingsEntries,settings::initSettings));plugin.executeDelayed(2f,manager::rehydrate);plugin.executeDelayed(5f,jobs::completeDueJobs);ServiceNpcPlugin.logger().info("OZ Service NPC enabled.");}catch(SQLException ex){throw new IllegalStateException("Cannot initialize Service NPC persistence",ex);} }
+    public void enable() {
+        I18n i18n = I18n.getInstance(plugin);
+        settings = PluginSettings.getInstance(plugin);
+        settings.initSettings();
+        names = new NameCatalog();
+        names.load(plugin);
+        outfits = new OutfitCatalog();
+        outfits.load(plugin);
+        augmentation = new AugmentationCatalog();
+        augmentation.load(plugin);
+        db = SQLiteConnectionFactory.open(plugin);
+        try {
+            ServiceNpcRepository repository = new ServiceNpcRepository(db);
+            repository.initialize();
+            registerPlayerErasure(repository);
+            jobs = new ServiceJobService(plugin, repository, i18n, settings, augmentation);
+            manager = new ServiceNpcManager(plugin, repository, names, outfits, i18n, jobs);
+            ServiceNpcPluginGUI gui = new ServiceNpcPluginGUI(plugin, manager, i18n);
+            uiRegistrations.add(gui.registerMenu());
+            events = new ServiceNpcEventHandler(plugin, manager, gui, i18n);
+            String name = plugin.getDescription("name");
+            String version = plugin.getDescription("version");
+            PluginInfoStatusProviders.registerProvider(new ServiceNpcPluginInfoStatusProvider(name, version, i18n));
+            ServiceNpcPlayerPluginSettings playerSettings = new ServiceNpcPlayerPluginSettings(name, version, i18n);
+            PluginShortcutVisibility.register(name, playerSettings::shortcutVisible);
+            uiRegistrations.add(PlayerPluginSettingsOverlay.registerScopedPlayerPluginSettings(playerSettings));
+            uiRegistrations.add(PlayerPluginSettingsOverlay.registerScopedPlayerPluginAdminSettings(
+                    new PlayerPluginAdminSettings(name, version, settings::adminSettingsEntries, settings::initSettings)));
+            plugin.executeDelayed(2f, manager::rehydrate);
+            plugin.executeDelayed(5f, jobs::completeDueJobs);
+            ServiceNpcPlugin.logger().info("OZ Service NPC enabled.");
+        } catch (SQLException ex) {
+            throw new IllegalStateException("Cannot initialize Service NPC persistence", ex);
+        }
+    }
+
     private void registerPlayerErasure(ServiceNpcRepository repository) {
         erasureRegistration = de.omegazirkel.risingworld.tools.privacy.PlayerErasureService.register(
                 "service-npc", repository::playerErasureReady, request -> repository.erasePlayerData(request.playerDbId()));
     }
-    public void disable(){ if (erasureRegistration != null) erasureRegistration.close();if(jobs!=null)jobs.stop();PluginShortcutVisibility.unregister(plugin.getDescription("name"));PluginInfoStatusProviders.unregisterProvider(plugin.getDescription("name"));try{if(db!=null)db.close();}catch(SQLException ex){ServiceNpcPlugin.logger().error("Cannot close database: "+ex.getMessage());}}
+    public void disable() {
+        uiRegistrations.forEach(Runnable::run);
+        uiRegistrations.clear();
+        if (erasureRegistration != null) erasureRegistration.close();
+        if (jobs != null) jobs.stop();
+        PluginShortcutVisibility.unregister(plugin.getDescription("name"));
+        PluginInfoStatusProviders.unregisterProvider(plugin.getDescription("name"));
+        try {
+            if (db != null) db.close();
+        } catch (SQLException ex) {
+            ServiceNpcPlugin.logger().error("Cannot close database: " + ex.getMessage());
+        }
+    }
+
     public void reloadSettings(Path ignored){ settings.initSettings(); names.load(plugin); outfits.load(plugin); augmentation.load(plugin); }
     public ServiceNpcEventHandler events(){return events;}
     public int countForFaction(int factionId){return manager==null ? Integer.MAX_VALUE : manager.countForFaction(factionId);}

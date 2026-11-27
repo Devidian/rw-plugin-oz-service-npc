@@ -34,8 +34,11 @@ public final class ServiceNpcPluginGUI {
         AssetManager.loadIconFromPlugin(plugin, "service-action-dissolve");
         AssetManager.loadIconFromPlugin(plugin, "service-action-rename");
         AssetManager.loadIconFromPlugin(plugin, "service-action-move");
-        PluginMenuManager.registerPluginMenu(new MenuItem(pluginName, "oz-service-npc", text("tc.service.menu.root"),
-                this::openMainMenu));
+    }
+
+    Runnable registerMenu() {
+        return PluginMenuManager.registerScopedPluginMenu(
+                new MenuItem(pluginName, "oz-service-npc", text("tc.service.menu.root"), this::openMainMenu));
     }
 
     public void openMainMenu(Player player) {

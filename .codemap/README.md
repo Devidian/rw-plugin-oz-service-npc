@@ -12,8 +12,9 @@ Persistent Restorer and Augmenter service NPCs, jobs, payments and item delivery
 
 ## Build and tests
 
-[Maven](../pom.xml) builds against the Rising World API and OZ Tools. Follow [repository instructions](../AGENTS.md) for validation. No test directory was identified.
+[Maven](../pom.xml) builds against the Rising World API and OZ Tools. Follow [repository instructions](../AGENTS.md) for validation and see [custody tests](../src-test/).
 
 ## Dependencies
 
 - `rw-plugin-oz-tools/shared-api` — build and shared runtime infrastructure. [Build configuration](../pom.xml)
+- `rw-plugin-oz-tools/ui-settings` — the runtime retires the scoped menu and player and admin settings registrations on disable. [Runtime](../src/de/omegazirkel/risingworld/servicenpc/ServiceNpcRuntime.java)

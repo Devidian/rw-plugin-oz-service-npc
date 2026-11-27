@@ -4,7 +4,13 @@
 
 ## Unreleased
 
-- Augmenter intake journals per-slot custody, payment and refund progress. Ambiguous jobs require operator review before delivery.
+## [0.5.2] - 2026-11-27 | OZ Service NPC item custody and reload
+
+- Augmenter intake records which items were removed and which payment effects succeeded. Jobs with uncertain custody or payment remain pending for review while confirmed items can be recovered through Mail.
+- The Service NPC menu and settings registrations are removed when the plugin is disabled or reloaded.
+- Preserve unresolved jobs and matching Wallet and Mail records when reviewing rollback.
+
+Requires OZ Tools 0.30.0.
 
 ## [0.5.0] - 2026-10-15 | Clothing controls and more augmentable tools
 

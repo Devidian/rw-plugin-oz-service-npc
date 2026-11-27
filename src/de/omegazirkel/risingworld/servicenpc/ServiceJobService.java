@@ -94,20 +94,36 @@ public final class ServiceJobService {
     public boolean submitAugmenter(Player player, ServiceNpc endpoint, AugmentQuote quote) {
         if (player == null || endpoint == null || quote == null || endpoint.type() != ServiceType.AUGMENTER) return false;
         if (!new MailBridge(plugin).canReceiveMail(player.getDbID())) { message(player, "tc.service.job.mail.unavailable"); return false; }
-        if (!ServiceInventoryTransfer.hasMaterials(player, quote.tier().materials())) { message(player, "tc.service.job.materials.missing"); return false; }
+        List<ServiceInventoryTransfer.PlannedRemoval> plan = ServiceInventoryTransfer.planAugment(
+                player, quote.item(), quote.tier().materials());
+        if (plan.isEmpty()) { message(player, "tc.service.job.materials.missing"); return false; }
         WalletBridge wallet = new WalletBridge(plugin); String currency = wallet.defaultCurrencyIdentifier();
         if (!wallet.isAvailable() || !wallet.hasSystemAccountApi() || currency.isBlank()) { message(player, "tc.service.wallet.unavailable"); return false; }
         String id=UUID.randomUUID().toString(), correlation="service-npc-job-"+id; ServiceInventoryTransfer.Candidate item=quote.item();
         ServiceJob job=new ServiceJob(id,endpoint.npcId(),player.getDbID(),player.getName(),ServiceType.AUGMENTER,System.currentTimeMillis(),quote.completedAt(),"PREPARING",player.getLanguage(),item.itemName(),item.variant(),item.durability(),item.status(),item.modifier(),quote.targetModifier(),item.color(),quote.tier().serviceFee(),currency,correlation);
         try {
-            repository.saveJob(job);
-            if (!wallet.transferPlayerToSystemIdempotent(player.getDbID(), endpoint.accountId(), quote.tier().serviceFee(), "Augmenter service", currency, PLUGIN_NAME, correlation).success()) { repository.deleteJob(id); message(player,"tc.service.job.payment.failed"); return false; }
-            if (!ServiceInventoryTransfer.remove(player,item) || !ServiceInventoryTransfer.removeMaterials(player,quote.tier().materials())) {
-                boolean refunded=wallet.reverseAccountTransferIdempotent(correlation,correlation+"-refund","Augmenter service refund",PLUGIN_NAME).success();
-                if(refunded) repository.deleteJob(id); else repository.updateJobStatus(id,"REFUND_PENDING"); message(player,refunded?"tc.service.job.item.changed":"tc.service.job.refund.pending"); return false;
+            if (!repository.reserveAugmenterJob(job)) {
+                message(player, "tc.service.job.reconcile");
+                return false;
             }
-            repository.updateJobStatus(id,"OPEN"); message(player,"tc.service.job.accepted","PH_COST",Long.toString(quote.tier().serviceFee()),"PH_MINUTES",Long.toString(durationMinutes(quote.completedAt()))); return true;
-        } catch(SQLException|ArithmeticException exception) { ServiceNpcPlugin.logger().error("Cannot submit augmenter job: "+exception.getMessage()); message(player,"tc.service.job.failed"); return false; }
+            AugmenterIntake.Outcome outcome = AugmenterIntake.submit(plan,
+                    (status, details) -> repository.updateJobProgress(id, status, details),
+                    () -> wallet.transferPlayerToSystemIdempotent(player.getDbID(), endpoint.accountId(),
+                            quote.tier().serviceFee(), "Augmenter service", currency, PLUGIN_NAME, correlation),
+                    step -> ServiceInventoryTransfer.removePlanned(player, step),
+                    () -> wallet.reverseAccountTransferIdempotent(correlation, correlation + "-refund",
+                            "Augmenter service refund", PLUGIN_NAME).success());
+            if (outcome != AugmenterIntake.Outcome.OPEN) {
+                message(player, outcome == AugmenterIntake.Outcome.PAYMENT_REJECTED
+                        ? "tc.service.job.payment.failed" : "tc.service.job.reconcile");
+                return false;
+            }
+            message(player,"tc.service.job.accepted","PH_COST",Long.toString(quote.tier().serviceFee()),"PH_MINUTES",Long.toString(durationMinutes(quote.completedAt()))); return true;
+        } catch (SQLException | RuntimeException exception) {
+            ServiceNpcPlugin.logger().error("Augmenter job " + id + " needs review: " + exception.getMessage());
+            message(player, "tc.service.job.reconcile");
+            return false;
+        }
     }
 
     public void completeDueJobs() {

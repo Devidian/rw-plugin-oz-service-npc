@@ -4,5 +4,5 @@ package de.omegazirkel.risingworld.servicenpc;
 public record ServiceJob(String id, long npcId, int playerDbId, String playerName, ServiceType type,
         long acceptedAt, long completedAt, String status, String language, String itemName, int itemVariant, int itemDurability,
         short itemStatus, String itemModifier, String targetModifier, int itemColor, long cost, String currency, String correlationId) {
-    public boolean open() { return "PREPARING".equals(status) || "OPEN".equals(status); }
+    public boolean open() { return "OPEN".equals(status); }
 }

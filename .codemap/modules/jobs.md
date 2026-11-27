@@ -10,7 +10,7 @@ Own service jobs and NPC state. Wallet owns money and Mail owns delivered attach
 - [`ServiceJobService`](../../src/de/omegazirkel/risingworld/servicenpc/ServiceJobService.java) — job creation, payment and delivery.
 - [`ServiceNpcRepository`](../../src/de/omegazirkel/risingworld/servicenpc/ServiceNpcRepository.java) — NPC and job persistence.
 - [`ServiceInventoryTransfer`](../../src/de/omegazirkel/risingworld/servicenpc/ServiceInventoryTransfer.java) — inventory custody.
-- No test directory was identified. Consult the repository validation instructions.
+- [Augmenter intake](../../src/de/omegazirkel/risingworld/servicenpc/AugmenterIntake.java) records payment, inventory and refund steps. [Intake tests](../../src-test/de/omegazirkel/risingworld/servicenpc/AugmenterIntakeTest.java) cover partial failure and review state.
 - [Repository index](../README.md) and [settings defaults](../../src/settings.default.json).
 
 ## Dependencies

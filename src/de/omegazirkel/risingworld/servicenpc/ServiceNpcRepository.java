@@ -13,6 +13,7 @@ public final class ServiceNpcRepository {
             ensureColumn(s, "service_npcs", "outfit", "TEXT NOT NULL DEFAULT ''");
             ensureColumn(s, "service_npcs", "faction_id", "INTEGER NOT NULL DEFAULT 0");
             s.executeUpdate("CREATE TABLE IF NOT EXISTS service_jobs (id TEXT PRIMARY KEY, npc_id INTEGER NOT NULL, player_db_id INTEGER NOT NULL, player_name TEXT NOT NULL, type TEXT NOT NULL, accepted_at INTEGER NOT NULL, completed_at INTEGER NOT NULL DEFAULT 0, status TEXT NOT NULL, language TEXT NOT NULL DEFAULT 'en', details TEXT NOT NULL DEFAULT '', item_name TEXT NOT NULL DEFAULT '', item_variant INTEGER NOT NULL DEFAULT 0, item_durability INTEGER NOT NULL DEFAULT 0, item_status INTEGER NOT NULL DEFAULT 0, item_modifier TEXT NOT NULL DEFAULT '', target_modifier TEXT NOT NULL DEFAULT '', item_color INTEGER NOT NULL DEFAULT 0, cost INTEGER NOT NULL DEFAULT 0, currency TEXT NOT NULL DEFAULT '', correlation_id TEXT NOT NULL DEFAULT '')");
+            ensureColumn(s, "service_jobs", "details", "TEXT NOT NULL DEFAULT ''");
             ensureColumn(s, "service_jobs", "language", "TEXT NOT NULL DEFAULT 'en'");
             ensureColumn(s, "service_jobs", "item_name", "TEXT NOT NULL DEFAULT ''");
             ensureColumn(s, "service_jobs", "item_variant", "INTEGER NOT NULL DEFAULT 0");
@@ -57,7 +58,55 @@ public final class ServiceNpcRepository {
             return true;
         }
     }
-    public void saveJob(ServiceJob job) throws SQLException { try (PreparedStatement s=db.prepareStatement("INSERT INTO service_jobs(id,npc_id,player_db_id,player_name,type,accepted_at,completed_at,status,language,item_name,item_variant,item_durability,item_status,item_modifier,target_modifier,item_color,cost,currency,correlation_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")) { s.setString(1,job.id());s.setLong(2,job.npcId());s.setInt(3,job.playerDbId());s.setString(4,job.playerName());s.setString(5,job.type().name());s.setLong(6,job.acceptedAt());s.setLong(7,job.completedAt());s.setString(8,job.status());s.setString(9,job.language());s.setString(10,job.itemName());s.setInt(11,job.itemVariant());s.setInt(12,job.itemDurability());s.setShort(13,job.itemStatus());s.setString(14,job.itemModifier());s.setString(15,job.targetModifier());s.setInt(16,job.itemColor());s.setLong(17,job.cost());s.setString(18,job.currency());s.setString(19,job.correlationId());s.executeUpdate(); } }
+    public void saveJob(ServiceJob job) throws SQLException {
+        insertJob(job, false);
+    }
+
+    boolean reserveAugmenterJob(ServiceJob job) throws SQLException {
+        return insertJob(job, true);
+    }
+
+    private boolean insertJob(ServiceJob job, boolean guardUnresolvedIntake) throws SQLException {
+        String values = "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?";
+        String sql = "INSERT INTO service_jobs(id,npc_id,player_db_id,player_name,type,accepted_at,completed_at,"
+                + "status,language,item_name,item_variant,item_durability,item_status,item_modifier,target_modifier,"
+                + "item_color,cost,currency,correlation_id) ";
+        sql += guardUnresolvedIntake
+                ? "SELECT " + values + " WHERE NOT EXISTS (SELECT 1 FROM service_jobs WHERE player_db_id = ?"
+                    + " AND type = 'AUGMENTER' AND status IN ('PREPARING','RECONCILE_REQUIRED','REFUND_PENDING'))"
+                : "VALUES(" + values + ")";
+        try (PreparedStatement statement = db.prepareStatement(sql)) {
+            statement.setString(1, job.id());
+            statement.setLong(2, job.npcId());
+            statement.setInt(3, job.playerDbId());
+            statement.setString(4, job.playerName());
+            statement.setString(5, job.type().name());
+            statement.setLong(6, job.acceptedAt());
+            statement.setLong(7, job.completedAt());
+            statement.setString(8, job.status());
+            statement.setString(9, job.language());
+            statement.setString(10, job.itemName());
+            statement.setInt(11, job.itemVariant());
+            statement.setInt(12, job.itemDurability());
+            statement.setShort(13, job.itemStatus());
+            statement.setString(14, job.itemModifier());
+            statement.setString(15, job.targetModifier());
+            statement.setInt(16, job.itemColor());
+            statement.setLong(17, job.cost());
+            statement.setString(18, job.currency());
+            statement.setString(19, job.correlationId());
+            if (guardUnresolvedIntake) statement.setInt(20, job.playerDbId());
+            return statement.executeUpdate() == 1;
+        }
+    }
+    void updateJobProgress(String id, String status, String details) throws SQLException {
+        try (PreparedStatement statement = db.prepareStatement("UPDATE service_jobs SET status=?, details=? WHERE id=?")) {
+            statement.setString(1, status);
+            statement.setString(2, details);
+            statement.setString(3, id);
+            if (statement.executeUpdate() != 1) throw new SQLException("Service job no longer exists: " + id);
+        }
+    }
     public void updateJobStatus(String id,String status) throws SQLException { try(PreparedStatement s=db.prepareStatement("UPDATE service_jobs SET status=? WHERE id=?")){s.setString(1,status);s.setString(2,id);s.executeUpdate();} }
     public void deleteJob(String id) throws SQLException { try(PreparedStatement s=db.prepareStatement("DELETE FROM service_jobs WHERE id=?")){s.setString(1,id);s.executeUpdate();} }
     public List<ServiceJob> dueJobs(long now) throws SQLException { try(PreparedStatement s=db.prepareStatement("SELECT * FROM service_jobs WHERE status='OPEN' AND completed_at<=? ORDER BY completed_at,id")){s.setLong(1,now);try(ResultSet r=s.executeQuery()){List<ServiceJob> jobs=new ArrayList<>();while(r.next())jobs.add(readJob(r));return jobs;}} }

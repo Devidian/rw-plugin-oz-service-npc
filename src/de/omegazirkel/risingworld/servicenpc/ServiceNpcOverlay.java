@@ -145,7 +145,9 @@ public final class ServiceNpcOverlay extends BasePluginOverlayWithTabs {
         for (int index = 0; index < values.size(); index++) {
             ServiceJob job = values.get(index);
             String status = t().get("tc.service.job.status." + job.status().toLowerCase(), uiPlayer);
-            String time = job.open() ? t().get("tc.service.job.remaining", uiPlayer).replace("PH_MINUTES", Long.toString(ServiceJobService.durationMinutes(job.completedAt()))) : t().get("tc.service.job.completed", uiPlayer);
+            String time = job.open()
+                    ? t().get("tc.service.job.remaining", uiPlayer).replace("PH_MINUTES", Long.toString(ServiceJobService.durationMinutes(job.completedAt())))
+                    : "COMPLETED".equals(job.status()) ? t().get("tc.service.job.completed", uiPlayer) : "";
             java.util.List<TableCell> cells=new java.util.ArrayList<>(Arrays.asList(cell(localizedItemName(job),uiPlayer.isAdmin()?30:34),cell(job.cost()+" "+job.currency(),uiPlayer.isAdmin()?16:20),cell(status,uiPlayer.isAdmin()?18:22),cell(time,uiPlayer.isAdmin()?18:24)));
             if(uiPlayer.isAdmin()) { if(job.open()){ AdvancedButton finish=AdvancedButtonFactory.ok(t().get("tc.service.job.finish",uiPlayer),ignored->{if(jobs.completeNow(job.id()))rebuild();});finish.setSize(132,26,false);cells.add(new TableCell(finish,18)); } else cells.add(cell("",18)); }
             table.addRow(new TableRow(cells));

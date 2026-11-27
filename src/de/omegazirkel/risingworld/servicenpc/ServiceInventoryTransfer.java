@@ -48,6 +48,67 @@ public final class ServiceInventoryTransfer {
         values.sort(Comparator.comparing(Candidate::displayName, String.CASE_INSENSITIVE_ORDER));
         return List.copyOf(values);
     }
+    /** One planned removal against the original inventory slot. */
+    public record PlannedRemoval(SlotType slotType, int slot, String itemName, int variant, int durability,
+            short status, String modifier, int color, int expectedStack, int amount, boolean target) { }
+
+    /**
+     * Plans the selected item and its materials against the same inventory snapshot.
+     * The selected item is reserved before counting materials.
+     */
+    public static List<PlannedRemoval> planAugment(Player player, Candidate target,
+            java.util.Map<String, Integer> required) {
+        if (player == null || player.getInventory() == null || target == null) return List.of();
+        Inventory inventory = player.getInventory();
+        List<PlannedRemoval> slots = new ArrayList<>();
+        PlannedRemoval selected = null;
+        for (SlotType type : SlotType.values()) {
+            for (int slot = 0; slot < inventory.getSlotCount(type); slot++) {
+                Item item = inventory.getItem(slot, type);
+                if (item == null || !item.isValid() || item.getStack() <= 0) continue;
+                boolean isTarget = selected == null && matches(item, target);
+                PlannedRemoval snapshot = new PlannedRemoval(type, slot, itemName(item), item.getVariant(),
+                        item.getDurability(), item.getStatus(), modifierName(item), color(item),
+                        item.getStack(), isTarget ? 1 : 0, isTarget);
+                slots.add(snapshot);
+                if (isTarget) selected = snapshot;
+            }
+        }
+        return planAugment(slots, selected, required);
+    }
+
+    static List<PlannedRemoval> planAugment(List<PlannedRemoval> slots, PlannedRemoval selected,
+            java.util.Map<String, Integer> required) {
+        if (selected == null) return List.of();
+        List<PlannedRemoval> plan = new ArrayList<>();
+        plan.add(selected);
+        java.util.Map<String, Integer> remaining = new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        required.forEach((name, amount) -> remaining.merge(name, amount, Math::addExact));
+        for (PlannedRemoval slot : slots) {
+            int available = slot.expectedStack() - (slot.target() ? 1 : 0);
+            int needed = remaining.getOrDefault(slot.itemName(), 0);
+            int amount = Math.min(available, needed);
+            if (amount <= 0) continue;
+            plan.add(new PlannedRemoval(slot.slotType(), slot.slot(), slot.itemName(), slot.variant(),
+                    slot.durability(), slot.status(), slot.modifier(), slot.color(), available, amount, false));
+            remaining.put(slot.itemName(), needed - amount);
+        }
+        return remaining.values().stream().anyMatch(amount -> amount > 0) ? List.of() : List.copyOf(plan);
+    }
+
+    /** Revalidates the exact slot before a previously journaled removal. */
+    public static boolean removePlanned(Player player, PlannedRemoval step) {
+        if (player == null || player.getInventory() == null) return false;
+        Inventory inventory = player.getInventory();
+        Item current = inventory.getItem(step.slot(), step.slotType());
+        Candidate expected = new Candidate(step.itemName(), step.itemName(), step.variant(),
+                step.durability(), 0, step.status(), step.modifier(), step.color());
+        if (!matches(current, expected) || current.getStack() != step.expectedStack()) return false;
+        boolean removed = inventory.removeItem(step.slot(), step.slotType(), step.amount());
+        inventory.syncWithClient();
+        return removed;
+    }
+
     public static boolean hasMaterials(Player player, java.util.Map<String,Integer> required) {
         if (player == null || player.getInventory() == null) return false;
         java.util.Map<String,Integer> found = new java.util.HashMap<>();

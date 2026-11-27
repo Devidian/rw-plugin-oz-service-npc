@@ -16,3 +16,7 @@ Every implementation plan must include objective, ownership, dependencies, risks
 
 - [x] Implement: Service NPC settings now offer random catalog clothing and a copy of the player's worn clothing for authorized global and faction managers. Serialized clothing persists in the existing outfit field. The augmenter also accepts the explicitly listed axes, knives, hammers, scythes, sickles, chainsaw, and mining drill.
 - [ ] Verify behavior on Development after upload, including persistence and permissions where relevant.
+
+## Maintenance
+
+Augmenter intake journals per-slot custody, payment and refund progress. Ambiguous jobs require operator review before delivery.
